@@ -97,6 +97,7 @@
     <QtUic Include="USTCNameBattle.ui" />
     <QtMoc Include="USTCNameBattle.h" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="GameWindow.cpp" />
     <ClCompile Include="USTCNameBattle.cpp" />
     <ClCompile Include="main.cpp" />
     <None Include="USTCNameBattle.ico" />
@@ -104,6 +105,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h" />
+    <QtMoc Include="GameWindow.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
