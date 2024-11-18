@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QtWidgets/QMainWindow>
+#include <QCloseEvent>
 #include "ui_GameWindow.h"
 
 class GameWindow : public QMainWindow
@@ -11,7 +12,9 @@ public:
 	GameWindow(QWidget* parent = nullptr);
 	~GameWindow();
 
+protected:
+	void closeEvent(QCloseEvent* event) override;
+
 private:
 	Ui::GameWindowClass ui;
-
 };

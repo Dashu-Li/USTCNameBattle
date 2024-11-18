@@ -8,3 +8,9 @@ GameWindow::GameWindow(QWidget* parent)
 
 GameWindow::~GameWindow()
 {}
+
+void GameWindow::closeEvent(QCloseEvent *event)
+{
+	event->accept();
+	delete this;
+}

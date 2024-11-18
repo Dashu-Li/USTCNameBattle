@@ -2,6 +2,7 @@
 
 #include <QtWidgets/QMainWindow>
 #include "ui_USTCNameBattle.h"
+#include "GameWindow.h"
 
 class USTCNameBattle : public QMainWindow
 {
@@ -13,6 +14,7 @@ public:
 
 private:
     Ui::USTCNameBattleClass ui;
+    GameWindow *gameWindow;
 
 private slots:
 	void GameStart();
