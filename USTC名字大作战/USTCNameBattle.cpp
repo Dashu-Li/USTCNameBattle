@@ -8,3 +8,8 @@ USTCNameBattle::USTCNameBattle(QWidget *parent)
 
 USTCNameBattle::~USTCNameBattle()
 {}
+
+void USTCNameBattle::on_pushButton_clicked()
+{
+	ui.statusBar->setAccessibleDescription("Hello, World!");
+}

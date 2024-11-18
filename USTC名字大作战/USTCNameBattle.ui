@@ -33,7 +33,7 @@
      <string>USTC名字大作战</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="StartGame">
+   <widget class="QPushButton" name="GameStart">
     <property name="geometry">
      <rect>
       <x>220</x>
@@ -77,5 +77,25 @@
  <resources>
   <include location="USTCNameBattle.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>GameStart</sender>
+   <signal>clicked()</signal>
+   <receiver>USTCNameBattleClass</receiver>
+   <slot>GameStart()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>286</x>
+     <y>303</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>461</x>
+     <y>219</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>GameStart()</slot>
+ </slots>
 </ui>
