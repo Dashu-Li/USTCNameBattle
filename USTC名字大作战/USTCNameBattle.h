@@ -18,4 +18,5 @@ private:
 
 private slots:
 	void GameStart();
+    void Back();
 };
