@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>←返回</string>
+     <string>&lt;返回</string>
     </property>
    </widget>
   </widget>
