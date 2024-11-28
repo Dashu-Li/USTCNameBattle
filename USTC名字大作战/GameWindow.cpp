@@ -1,5 +1,6 @@
 ﻿#include "GameWindow.h"
 #include <QMessageBox>
+#include <QRegularExpression>
 
 GameWindow::GameWindow(QWidget* parent)
 	: QMainWindow(parent), game(nullptr)
@@ -16,26 +17,41 @@ GameWindow::~GameWindow()
 
 void GameWindow::on_battleStartButton_clicked()
 {
-	QString battleText = ui.battleEdit->toPlainText();				// 获取battleEdit的文本
-	if (battleText.isEmpty()) {										// 如果文本为空, 则弹出提示框
+	QString battleText = ui.battleEdit->toPlainText().trimmed();				// 获取battleEdit的文本并去除首尾空行
+	if (battleText.isEmpty()) {													// 如果文本为空, 则弹出提示框
 		QMessageBox::warning(this, "错误", "请输入名字");
 		return;
 	}
-	QStringList names = battleText.split("\n", Qt::SkipEmptyParts);	// 以换行符分割文本
-	if (names.size() < 2) {											// 如果名字数量小于2, 则弹出提示框
-		QMessageBox::warning(this, "错误", "名字数量不足");
-		return;
+	QStringList groups = battleText.split(QRegularExpression("\\n\\s*\\n"));	// 以连续空行分割文本为组
+	if (groups.size() == 1) {													// 如果只有一个组, 则为个人战
+		QStringList names = battleText.split("\n");								// 以换行符分割文本为名字
+		if (names.size() < 2) {													// 如果名字数量小于2, 则弹出提示框
+			QMessageBox::warning(this, "错误", "名字数量不足");
+			return;
+		}
+		ui.battleEdit->setReadOnly(true);										// 设置battleEdit只读
+		ui.battleStartButton->setEnabled(false);								// 禁用开始对战按钮
+		ui.PlayAgainButton->setEnabled(true);									// 启用再玩一局按钮
+		game = new Game;														// 创建游戏对象
+		for (int i = 0; i < names.size(); i++) {
+			game->addPlayer(names[i].toStdString());							// 添加玩家
+		}
+		// TODO: 输出对战结果
 	}
-	ui.battleEdit->setReadOnly(true);								// 设置battleEdit只读
-	ui.battleStartButton->setEnabled(false);						// 禁用开始对战按钮
-	ui.PlayAgainButton->setEnabled(true);							// 启用再玩一局按钮
-	game = new Game;												// 创建游戏对象
-	for (int i = 0; i < names.size(); i++) {
-		game->addPlayer(names[i].toStdString());					// 添加玩家
+	else {																		// 否则为组队战
+		ui.battleEdit->setReadOnly(true);										// 设置battleEdit只读
+		ui.battleStartButton->setEnabled(false);								// 禁用开始对战按钮
+		ui.PlayAgainButton->setEnabled(true);									// 启用再玩一局按钮
+		game = new Game;														// 创建游戏对象
+		for (int i = 0; i < groups.size(); i++) {
+			QStringList names = groups[i].split("\n");							// 以换行符分割每组文本为名字
+			for (int j = 0; j < names.size(); j++) {
+				game->addPlayer(names[j].toStdString());						// 添加玩家
+			}
+		}
+		// TODO: 输出对战结果
 	}
-	// TODO: 输出对战结果
-
-	delete game;													// 删除游戏对象
+	delete game;																// 删除游戏对象
 }
 
 void GameWindow::on_PlayAgainButton_clicked()
