@@ -1,32 +1,42 @@
-#pragma once
+ï»¿#pragma once
+#include <vector>
+#include <string>
 
 class Player {
 private:
-	int hp;		// ÉúÃüÖµ
-	int atk;	// ¹¥»÷Á¦
-	int def;	// ·ÀÓùÁ¦
-	int GPA;	// ¼¨µã
-	int exp;	// ¾­ÑéÖµ
-	int level;	// µÈ¼¶
+	std::string name;	// åå­—
+	int hp;				// ç”Ÿå‘½å€¼
+	int atk;			// æ”»å‡»åŠ›
+	int def;			// é˜²å¾¡åŠ›
+	int GPA;			// ç»©ç‚¹
+	int exp;			// ç»éªŒå€¼
+	int level;			// ç­‰çº§
 public:
-	Player();
-	Player(int hp, int atk, int def, int GPA, int exp, int level);
-	int getHp() const;			// »ñÈ¡ÉúÃüÖµ
-	int getAtk() const;			// »ñÈ¡¹¥»÷Á¦
-	int getDef() const;			// »ñÈ¡·ÀÓùÁ¦
-	int getGPA() const;			// »ñÈ¡¼¨µã
-	int getExp() const;			// »ñÈ¡¾­ÑéÖµ
-	int getLevel() const;		// »ñÈ¡µÈ¼¶
-	void setHp(int hp);			// ÉèÖÃÉúÃüÖµ
-	void setAtk(int atk);		// ÉèÖÃ¹¥»÷Á¦
-	void setDef(int def);		// ÉèÖÃ·ÀÓùÁ¦
-	void setGPA(int GPA);		// ÉèÖÃ¼¨µã
-	void setExp(int exp);		// ÉèÖÃ¾­ÑéÖµ
-	void setLevel(int level);	// ÉèÖÃµÈ¼¶
-	void levelUp();				// Éı¼¶
-	void addExp(int exp);		// Ôö¼Ó¾­ÑéÖµ
-	void addGPA(int GPA);		// Ôö¼Ó¼¨µã
-	void addHp(int hp);			// Ôö¼ÓÉúÃüÖµ
-	void addAtk(int atk);		// Ôö¼Ó¹¥»÷Á¦
-	void addDef(int def);		// Ôö¼Ó·ÀÓùÁ¦
+	Player(std::string name = "", int hp = 100, int atk = 10, int def = 5, int GPA = 4.3, int exp = 0, int level = 1);
+	int getHp() const;			// è·å–ç”Ÿå‘½å€¼
+	int getAtk() const;			// è·å–æ”»å‡»åŠ›
+	int getDef() const;			// è·å–é˜²å¾¡åŠ›
+	int getGPA() const;			// è·å–ç»©ç‚¹
+	int getExp() const;			// è·å–ç»éªŒå€¼
+	int getLevel() const;		// è·å–ç­‰çº§
+	void setHp(int hp);			// è®¾ç½®ç”Ÿå‘½å€¼
+	void setAtk(int atk);		// è®¾ç½®æ”»å‡»åŠ›
+	void setDef(int def);		// è®¾ç½®é˜²å¾¡åŠ›
+	void setGPA(int GPA);		// è®¾ç½®ç»©ç‚¹
+	void setExp(int exp);		// è®¾ç½®ç»éªŒå€¼
+	void setLevel(int level);	// è®¾ç½®ç­‰çº§
+	void levelUp();				// å‡çº§
+	void addExp(int exp);		// å¢åŠ ç»éªŒå€¼
+	void addGPA(int GPA);		// å¢åŠ ç»©ç‚¹
+	void addHp(int hp);			// å¢åŠ ç”Ÿå‘½å€¼
+	void addAtk(int atk);		// å¢åŠ æ”»å‡»åŠ›
+	void addDef(int def);		// å¢åŠ é˜²å¾¡åŠ›
+};
+
+class Game {
+private:
+	std::vector<Player*> players;		// ç©å®¶åˆ—è¡¨
+public:
+	void addPlayer(std::string name);	// æ·»åŠ ç©å®¶
+	// TODO: æ·»åŠ ç©æ³•å®ç°
 };

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <QtWidgets/QMainWindow>
 #include "ui_USTCNameBattle.h"
@@ -6,17 +6,17 @@
 
 class USTCNameBattle : public QMainWindow
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    USTCNameBattle(QWidget *parent = nullptr);
-    ~USTCNameBattle();
+	USTCNameBattle(QWidget* parent = nullptr);
+	~USTCNameBattle();
 
 private:
-    Ui::USTCNameBattleClass ui;
-    GameWindow *gameWindow;
+	Ui::USTCNameBattleClass ui;
+	GameWindow* gameWindow;
 
 private slots:
-	void GameStart();
-    void Back();
+	void on_gameStartButton_clicked();
+	void Back();
 };

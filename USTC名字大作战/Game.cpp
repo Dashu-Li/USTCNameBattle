@@ -1,17 +1,13 @@
-#include "Game.h"
+﻿#include "Game.h"
 
-Player::Player()
+void Game::addPlayer(std::string name)
 {
-	hp = 100;
-	atk = 10;
-	def = 5;
-	GPA = 4.3;
-	exp = 0;
-	level = 1;
+	players.push_back(new Player(name));
 }
 
-Player::Player(int hp, int atk, int def, int GPA, int exp, int level)
+Player::Player(std::string name, int hp, int atk, int def, int GPA, int exp, int level)
 {
+	this->name = name;
 	this->hp = hp;
 	this->atk = atk;
 	this->def = def;
