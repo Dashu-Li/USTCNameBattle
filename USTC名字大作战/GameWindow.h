@@ -18,6 +18,9 @@ protected:
 private:
 	Ui::GameWindowClass ui;
 
+private slots:
+	void StartBattle();
+
 signals:
 	void Back();
 };
