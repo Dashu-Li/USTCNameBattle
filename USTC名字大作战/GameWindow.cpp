@@ -17,14 +17,14 @@ GameWindow::~GameWindow()
 
 void GameWindow::StartBattle()
 {
-	QString battleText = ui.battleEdit->toPlainText();	// 获取battleEdit的文本
-	if (battleText.isEmpty()) {							// 如果文本为空, 则弹出提示框
-		QMessageBox::warning(this, "错误", "请输入名字");
+	QString battleText = ui.battleEdit->toPlainText();	// ��ȡbattleEdit���ı�
+	if (battleText.isEmpty()) {							// ����ı�Ϊ��, �򵯳���ʾ��
+		QMessageBox::warning(this, "����", "����������");
 		return;
 	}
-    QStringList names = battleText.split("\n", Qt::SkipEmptyParts);		// 以换行符分割文本
-	if (names.size() < 2) {												// 如果名字数量小于2, 则弹出提示框
-		QMessageBox::warning(this, "错误", "名字数量不足");
+    QStringList names = battleText.split("\n", Qt::SkipEmptyParts);		// �Ի��з��ָ��ı�
+	if (names.size() < 2) {												// �����������С��2, �򵯳���ʾ��
+		QMessageBox::warning(this, "����", "������������");
 		return;
 	}
 }

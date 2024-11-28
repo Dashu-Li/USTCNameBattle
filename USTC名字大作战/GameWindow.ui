@@ -18,7 +18,7 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_3">
       <item>
-       <widget class="QPushButton" name="backButton">
+   <widget class="QPushButton" name="backButton">
         <property name="text">
          <string>&lt;返回</string>
         </property>
@@ -54,15 +54,15 @@
           <width>40</width>
           <height>20</height>
          </size>
-        </property>
+    </property>
        </spacer>
       </item>
       <item>
        <widget class="QPushButton" name="battleStartButton">
-        <property name="text">
+    <property name="text">
          <string>开始战斗!</string>
-        </property>
-       </widget>
+    </property>
+   </widget>
       </item>
       <item>
        <spacer name="horizontalSpacer_2">
