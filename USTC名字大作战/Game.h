@@ -35,8 +35,12 @@ public:
 
 class Game {
 private:
-	std::vector<Player*> players;		// 玩家列表
+	int teamCount;								// 队伍数量
+	std::vector<std::vector<Player*>> teams;	// 队伍玩家列表
 public:
-	void addPlayer(std::string name);	// 添加玩家
+	Game();
+	int getTeamCount() const;					// 获取队伍数量
+	bool isTeamBattle() const;					// 是否为组队对战
+	void addPlayer(std::string name, int team);	// 添加玩家
 	// TODO: 添加玩法实现
 };

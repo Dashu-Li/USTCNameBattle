@@ -1,8 +1,19 @@
 ﻿#include "Game.h"
 
-void Game::addPlayer(std::string name)
+Game::Game() : teamCount(0) {}
+
+int Game::getTeamCount() const { return teamCount; }
+
+bool Game::isTeamBattle() const { return teamCount > 1; }
+
+void Game::addPlayer(std::string name, int team)
 {
-	players.push_back(new Player(name));
+	if (team >= teamCount)
+	{
+		teamCount = team + 1;
+		teams.resize(teamCount);
+	}
+	teams[team].push_back(new Player(name));
 }
 
 Player::Player(std::string name, int hp, int atk, int def, int GPA, int exp, int level)
