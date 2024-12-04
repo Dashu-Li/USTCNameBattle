@@ -39,8 +39,23 @@ private:
 	std::vector<std::vector<Player*>> teams;	// 队伍玩家列表
 public:
 	Game();
-	int getTeamCount() const;					// 获取队伍数量
-	bool isTeamBattle() const;					// 是否为组队对战
-	void addPlayer(std::string name, int team);	// 添加玩家
+	int getTeamCount() const;							// 获取队伍数量
+	bool isTeamBattle() const;							// 是否为组队对战
+	void addPlayer(std::string name, int team);			// 添加玩家
 	// TODO: 添加玩法实现
+	Attack attack(Player* attacker, Player* defender);	// 攻击
+};
+
+class Attack {
+private:
+	Player* attacker;	// 攻击者
+	Player* defender;	// 防御者
+	int damage;			// 伤害值
+	bool isCritical;	// 是否暴击
+	bool isMiss;		// 是否闪避
+public:
+	Attack(Player* attacker, Player* defender, int damage);
+	int getDamage() const;		// 获取伤害值
+	bool getIsCritical() const;	// 获取是否暴击
+	bool getIsMiss() const;		// 获取是否闪避
 };

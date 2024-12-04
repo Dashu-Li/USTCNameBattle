@@ -16,6 +16,30 @@ void Game::addPlayer(std::string name, int team)
 	teams[team].push_back(new Player(name));
 }
 
+Attack Game::attack(Player* attacker, Player* defender)
+{
+	int damage = attacker->getAtk() - defender->getDef();
+	if (damage < 0)
+		damage = 0;
+	defender->setHp(defender->getHp() - damage);
+	return Attack(attacker, defender, damage);
+}
+
+Attack::Attack(Player* attacker, Player* defender, int damage)
+{
+	this->attacker = attacker;
+	this->defender = defender;
+	this->damage = damage;
+	isCritical = rand() % 100 < attacker->getLevel();
+	isMiss = rand() % 100 < defender->getLevel();
+}
+
+int Attack::getDamage() const { return damage; }
+
+bool Attack::getIsCritical() const { return isCritical; }
+
+bool Attack::getIsMiss() const { return isMiss; }
+
 Player::Player(std::string name, int hp, int atk, int def, int GPA, int exp, int level)
 {
 	this->name = name;
