@@ -40,9 +40,9 @@
      </layout>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,4">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,5">
       <item>
-       <widget class="QTextBrowser" name="statusBrowser"/>
+       <layout class="QVBoxLayout" name="statusLayout"/>
       </item>
       <item>
        <widget class="QTextEdit" name="battleEdit"/>

@@ -20,8 +20,7 @@ protected:
 private:
 	Ui::GameWindowClass ui;
 	Game* game;
-	QVBoxLayout* statusLayout;
-	void displayStatus();		// 显示每个玩家生命条，使用HTML文本输出到statusBrowser
+	void displayStatus();		// 显示每个玩家生命条
 
 private slots:
 	void on_battleStartButton_clicked();
