@@ -1,8 +1,11 @@
 ﻿#pragma once
 #include <vector>
 #include <string>
+#include <QObject>
 
-class Player {
+class Player : public QObject {
+	Q_OBJECT
+
 private:
 	std::string name;	// 名字
 	int hp;				// 生命值
@@ -11,6 +14,7 @@ private:
 	int GPA;			// 绩点
 	int exp;			// 经验值
 	int level;			// 等级
+
 public:
 	Player(std::string name = "", int hp = 100, int atk = 10, int def = 5, int GPA = 4.3, int exp = 0, int level = 1);
 	const std::string& getName() const;	// 获取名字
@@ -33,6 +37,9 @@ public:
 	void addHp(int hp);					// 增加生命值
 	void addAtk(int atk);				// 增加攻击力
 	void addDef(int def);				// 增加防御力
+
+signals:
+	void hpChanged(int newHp);
 };
 
 class Attack {

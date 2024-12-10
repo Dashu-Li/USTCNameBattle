@@ -67,6 +67,12 @@ void GameWindow::displayStatus()
 			QProgressBar* healthBar = new QProgressBar(this);
 			healthBar->setRange(0, 100);
 			healthBar->setValue(player->getHp());
+			healthBar->setFormat("%v/%m");
+			healthBar->setAlignment(Qt::AlignCenter);
+			healthBar->setStyleSheet("QProgressBar::chunk { background-color: #00FFCC; }");
+
+			// 连接玩家的 hpChanged 信号到 QProgressBar 的 setValue 槽，以便在玩家生命值改变时自动更新血条
+			connect(player, &Player::hpChanged, healthBar, &QProgressBar::setValue);
 
 			ui.statusLayout->addWidget(playerName);
 			ui.statusLayout->addWidget(healthBar);

@@ -67,7 +67,7 @@ const int& Player::getLevel() const { return level; }
 
 bool Player::isDead() const { return hp <= 0; }
 
-void Player::setHp(int hp) { this->hp = hp; }
+void Player::setHp(int hp) { this->hp = hp; emit hpChanged(hp); }
 
 void Player::setAtk(int atk) { this->atk = atk; }
 
