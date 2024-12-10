@@ -13,24 +13,26 @@ private:
 	int level;			// 等级
 public:
 	Player(std::string name = "", int hp = 100, int atk = 10, int def = 5, int GPA = 4.3, int exp = 0, int level = 1);
-	int getHp() const;			// 获取生命值
-	int getAtk() const;			// 获取攻击力
-	int getDef() const;			// 获取防御力
-	int getGPA() const;			// 获取绩点
-	int getExp() const;			// 获取经验值
-	int getLevel() const;		// 获取等级
-	void setHp(int hp);			// 设置生命值
-	void setAtk(int atk);		// 设置攻击力
-	void setDef(int def);		// 设置防御力
-	void setGPA(int GPA);		// 设置绩点
-	void setExp(int exp);		// 设置经验值
-	void setLevel(int level);	// 设置等级
-	void levelUp();				// 升级
-	void addExp(int exp);		// 增加经验值
-	void addGPA(int GPA);		// 增加绩点
-	void addHp(int hp);			// 增加生命值
-	void addAtk(int atk);		// 增加攻击力
-	void addDef(int def);		// 增加防御力
+	const std::string& getName() const;	// 获取名字
+	const int& getHp() const;			// 获取生命值
+	const int& getAtk() const;			// 获取攻击力
+	const int& getDef() const;			// 获取防御力
+	const int& getGPA() const;			// 获取绩点
+	const int& getExp() const;			// 获取经验值
+	const int& getLevel() const;		// 获取等级
+	bool isDead() const;				// 是否死亡
+	void setHp(int hp);					// 设置生命值
+	void setAtk(int atk);				// 设置攻击力
+	void setDef(int def);				// 设置防御力
+	void setGPA(int GPA);				// 设置绩点
+	void setExp(int exp);				// 设置经验值
+	void setLevel(int level);			// 设置等级
+	void levelUp();						// 升级
+	void addExp(int exp);				// 增加经验值
+	void addGPA(int GPA);				// 增加绩点
+	void addHp(int hp);					// 增加生命值
+	void addAtk(int atk);				// 增加攻击力
+	void addDef(int def);				// 增加防御力
 };
 
 class Attack {
@@ -42,9 +44,9 @@ private:
 	bool isMiss;		// 是否闪避
 public:
 	Attack(Player* attacker, Player* defender, int damage);
-	int getDamage() const;		// 获取伤害值
-	bool getIsCritical() const;	// 获取是否暴击
-	bool getIsMiss() const;		// 获取是否闪避
+	const int& getDamage() const;		// 获取伤害值
+	const bool& getIsCritical() const;	// 获取是否暴击
+	const bool& getIsMiss() const;		// 获取是否闪避
 };
 
 class Game {
@@ -53,9 +55,10 @@ private:
 	std::vector<std::vector<Player*>> teams;	// 队伍玩家列表
 public:
 	Game();
-	int getTeamCount() const;							// 获取队伍数量
-	bool isTeamBattle() const;							// 是否为组队对战
-	void addPlayer(std::string name, int team);			// 添加玩家
+	const int& getTeamCount() const;							// 获取队伍数量
+	const std::vector<std::vector<Player*>>& getTeams() const;	// 获取队伍玩家列表
+	bool isTeamBattle() const;									// 是否为组队对战
+	void addPlayer(std::string name, int team);					// 添加玩家
 	// TODO: 添加玩法实现
-	Attack attack(Player* attacker, Player* defender);	// 攻击
+	Attack attack(Player* attacker, Player* defender);			// 攻击
 };

@@ -2,6 +2,7 @@
 
 #include <QtWidgets/QMainWindow>
 #include <QCloseEvent>
+#include <QProgressBar>
 #include "ui_GameWindow.h"
 #include "Game.h"
 
@@ -19,6 +20,8 @@ protected:
 private:
 	Ui::GameWindowClass ui;
 	Game* game;
+	QVBoxLayout* statusLayout;
+	void displayStatus();		// 显示每个玩家生命条，使用HTML文本输出到statusBrowser
 
 private slots:
 	void on_battleStartButton_clicked();

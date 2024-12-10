@@ -2,14 +2,15 @@
 
 Game::Game() : teamCount(0) {}
 
-int Game::getTeamCount() const { return teamCount; }
+const int& Game::getTeamCount() const { return teamCount; }
+
+const std::vector<std::vector<Player*>>& Game::getTeams() const { return teams; }
 
 bool Game::isTeamBattle() const { return teamCount > 1; }
 
 void Game::addPlayer(std::string name, int team)
 {
-	if (team >= teamCount)
-	{
+	if (team >= teamCount) {
 		teamCount = team + 1;
 		teams.resize(teamCount);
 	}
@@ -19,8 +20,7 @@ void Game::addPlayer(std::string name, int team)
 Attack Game::attack(Player* attacker, Player* defender)
 {
 	int damage = attacker->getAtk() - defender->getDef();
-	if (damage < 0)
-		damage = 0;
+	if (damage < 0) damage = 0;
 	defender->setHp(defender->getHp() - damage);
 	return Attack(attacker, defender, damage);
 }
@@ -34,11 +34,11 @@ Attack::Attack(Player* attacker, Player* defender, int damage)
 	isMiss = rand() % 100 < defender->getLevel();
 }
 
-int Attack::getDamage() const { return damage; }
+const int& Attack::getDamage() const { return damage; }
 
-bool Attack::getIsCritical() const { return isCritical; }
+const bool& Attack::getIsCritical() const { return isCritical; }
 
-bool Attack::getIsMiss() const { return isMiss; }
+const bool& Attack::getIsMiss() const { return isMiss; }
 
 Player::Player(std::string name, int hp, int atk, int def, int GPA, int exp, int level)
 {
@@ -51,17 +51,21 @@ Player::Player(std::string name, int hp, int atk, int def, int GPA, int exp, int
 	this->level = level;
 }
 
-int Player::getHp() const { return hp; }
+const std::string& Player::getName() const { return name; }
 
-int Player::getAtk() const { return atk; }
+const int& Player::getHp() const { return hp; }
 
-int Player::getDef() const { return def; }
+const int& Player::getAtk() const { return atk; }
 
-int Player::getGPA() const { return GPA; }
+const int& Player::getDef() const { return def; }
 
-int Player::getExp() const { return exp; }
+const int& Player::getGPA() const { return GPA; }
 
-int Player::getLevel() const { return level; }
+const int& Player::getExp() const { return exp; }
+
+const int& Player::getLevel() const { return level; }
+
+bool Player::isDead() const { return hp <= 0; }
 
 void Player::setHp(int hp) { this->hp = hp; }
 
