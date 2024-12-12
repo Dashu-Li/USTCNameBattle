@@ -31,29 +31,36 @@ public:
 	void setGPA(int GPA);				// 设置绩点
 	void setExp(int exp);				// 设置经验值
 	void setLevel(int level);			// 设置等级
-	void levelUp();						// 升级
-	void addExp(int exp);				// 增加经验值
-	void addGPA(int GPA);				// 增加绩点
-	void addHp(int hp);					// 增加生命值
-	void addAtk(int atk);				// 增加攻击力
-	void addDef(int def);				// 增加防御力
+	int levelUp();						// 升级
+	int addExp(int exp);				// 增加经验值
+	int addGPA(int GPA);				// 增加绩点
+	int addHp(int hp);					// 增加生命值
+	int addAtk(int atk);				// 增加攻击力
+	int addDef(int def);				// 增加防御力
 
 signals:
-	void hpChanged(int newHp);
+	void hpChanged(int newHp);			// 生命值改变信号
 };
 
-class Attack {
-private:
-	Player* attacker;	// 攻击者
-	Player* defender;	// 防御者
-	int damage;			// 伤害值
-	bool isCritical;	// 是否暴击
-	bool isMiss;		// 是否闪避
+class Action {
 public:
-	Attack(Player* attacker, Player* defender, int damage);
-	const int& getDamage() const;		// 获取伤害值
-	const bool& getIsCritical() const;	// 获取是否暴击
-	const bool& getIsMiss() const;		// 获取是否闪避
+	enum ActionType { Attack, Heal, Skill };// 操作类型，有攻击、防御、技能等，可以添加更多属性
+
+	// 构造函数，返回一个操作对象，包含操作类型、发动者、目标、伤害值、是否暴击、是否闪避等信息
+	Action(ActionType actiontype, Player* initiator, Player* target = nullptr, int damage = 0, bool isCritical = false, bool isMiss = false);
+	const ActionType& getActionType() const;	// 获取操作类型
+	const int& getDamage() const;				// 获取伤害值
+	const bool& getIsCritical() const;			// 获取是否暴击
+	const bool& getIsMiss() const;				// 获取是否闪避
+
+private:
+	ActionType actiontype;	// 操作类型
+	Player* initiator;		// 发动者
+	Player* target;			// 目标
+	int damage;				// 伤害值
+	bool isCritical;		// 是否暴击
+	bool isMiss;			// 是否闪避
+
 };
 
 class Game {
@@ -66,6 +73,10 @@ public:
 	const std::vector<std::vector<Player*>>& getTeams() const;	// 获取队伍玩家列表
 	bool isTeamBattle() const;									// 是否为组队对战
 	void addPlayer(std::string name, int team);					// 添加玩家
-	// TODO: 添加玩法实现
-	Attack attack(Player* attacker, Player* defender);			// 攻击
+
+	// TODO: 定义一个函数，返回一个保存了一局游戏所有操作的vector，每一回合中，按随机顺序遍历所有玩家，随机产生该玩家本回合操作，若攻击则随机选择一个敌方玩家进行攻击
+
+	Action* attack(Player* attacker, Player* defender);			// 攻击
+	Action* heal(Player* healer, Player* target = nullptr);		// 治疗
+	Action* skill(Player* caster, Player* target = nullptr);	// 技能
 };

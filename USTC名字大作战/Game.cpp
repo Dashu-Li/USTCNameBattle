@@ -1,4 +1,6 @@
-﻿#include "Game.h"
+﻿#include <algorithm>
+#include <random>
+#include "Game.h"
 
 Game::Game() : teamCount(0) {}
 
@@ -17,28 +19,40 @@ void Game::addPlayer(std::string name, int team)
 	teams[team].push_back(new Player(name));
 }
 
-Attack Game::attack(Player* attacker, Player* defender)
+Action* Game::attack(Player* attacker, Player* defender)
 {
+	bool isCritical = rand() % 100 < defender->getLevel();		// 暴击率为发动者等级
+	bool isMiss = rand() % 100 < attacker->getLevel();			// 闪避率为目标等级
 	int damage = attacker->getAtk() - defender->getDef();
-	if (damage < 0) damage = 0;
-	defender->setHp(defender->getHp() - damage);
-	return Attack(attacker, defender, damage);
+	if (damage < 0 || isMiss) damage = 0;
+	if (isCritical) damage *= 2;
+	defender->addHp(-damage);
+	return new Action(Action::Attack, attacker, defender, damage, isCritical, isMiss);
 }
 
-Attack::Attack(Player* attacker, Player* defender, int damage)
+Action* Game::heal(Player* healer, Player* target)
 {
-	this->attacker = attacker;
-	this->defender = defender;
-	this->damage = damage;
-	isCritical = rand() % 100 < attacker->getLevel();
-	isMiss = rand() % 100 < defender->getLevel();
+	// TODO: 实现治疗逻辑
+	return new Action(Action::Heal, healer, target);
 }
 
-const int& Attack::getDamage() const { return damage; }
+Action* Game::skill(Player* caster, Player* target)
+{
+	// TODO: 实现技能逻辑
+	return new Action(Action::Skill, caster, target);
+}
 
-const bool& Attack::getIsCritical() const { return isCritical; }
+Action::Action(ActionType actiontype, Player* initiator, Player* target, int damage, bool isCritical, bool isMiss) :
+	actiontype(actiontype), initiator(initiator), target(target), damage(damage), isCritical(isCritical), isMiss(isMiss)
+{}
 
-const bool& Attack::getIsMiss() const { return isMiss; }
+const Action::ActionType& Action::getActionType() const { return actiontype; }
+
+const int& Action::getDamage() const { return damage; }
+
+const bool& Action::getIsCritical() const { return isCritical; }
+
+const bool& Action::getIsMiss() const { return isMiss; }
 
 Player::Player(std::string name, int hp, int atk, int def, int GPA, int exp, int level)
 {
@@ -79,14 +93,14 @@ void Player::setExp(int exp) { this->exp = exp; }
 
 void Player::setLevel(int level) { this->level = level; }
 
-void Player::levelUp() { level++; }
+int Player::levelUp() { level++; return level; }
 
-void Player::addExp(int exp) { this->exp += exp; }
+int Player::addExp(int exp) { this->exp += exp; return exp; }
 
-void Player::addGPA(int GPA) { this->GPA += GPA; }
+int Player::addGPA(int GPA) { this->GPA += GPA; return GPA; }
 
-void Player::addHp(int hp) { this->hp += hp; }
+int Player::addHp(int hp) { emit hpChanged(this->hp += hp); return hp; }
 
-void Player::addAtk(int atk) { this->atk += atk; }
+int Player::addAtk(int atk) { this->atk += atk; return atk; }
 
-void Player::addDef(int def) { this->def += def; }
+int Player::addDef(int def) { this->def += def; return def; }

@@ -31,18 +31,18 @@ void GameWindow::on_battleStartButton_clicked()
 			return;
 		}
 	}
-	ui.battleEdit->setReadOnly(true);										// 设置battleEdit只读
-	ui.battleStartButton->setEnabled(false);								// 禁用开始对战按钮
-	ui.PlayAgainButton->setEnabled(true);									// 启用再玩一局按钮
-	game = new Game;														// 创建游戏对象
+	ui.battleEdit->setReadOnly(true);											// 设置battleEdit只读
+	ui.battleStartButton->setEnabled(false);									// 禁用开始对战按钮
+	ui.PlayAgainButton->setEnabled(true);										// 启用再玩一局按钮
+	game = new Game;															// 创建游戏对象
 	for (int i = 0; i < teams.size(); i++) {
-		QStringList names = teams[i].split("\n");							// 以换行符分割每组文本为名字
+		QStringList names = teams[i].split("\n");								// 以换行符分割每组文本为名字
 		for (int j = 0; j < names.size(); j++)
-			game->addPlayer(names[j].toStdString(), i);						// 添加玩家
+			game->addPlayer(names[j].toStdString(), i);							// 添加玩家
 	}
-	displayStatus();														// 显示状态
+	displayStatus();															// 显示状态
 	// TODO: 输出对战结果
-	delete game;															// 删除游戏对象
+	delete game;																// 删除游戏对象
 }
 
 void GameWindow::on_PlayAgainButton_clicked()
@@ -61,7 +61,7 @@ void GameWindow::on_PlayAgainButton_clicked()
 
 void GameWindow::displayStatus()
 {
-	for (int i = 0; i < game->getTeamCount(); ++i) {
+	for (int i = 0; i < game->getTeamCount(); i++) {
 		for (auto player : game->getTeams()[i]) {
 			QLabel* playerName = new QLabel(QString::fromStdString(player->getName()), this);
 			QProgressBar* healthBar = new QProgressBar(this);
@@ -69,7 +69,7 @@ void GameWindow::displayStatus()
 			healthBar->setValue(player->getHp());
 			healthBar->setFormat("%v/%m");
 			healthBar->setAlignment(Qt::AlignCenter);
-			healthBar->setStyleSheet("QProgressBar::chunk { background-color: #00FFCC; }");
+			healthBar->setStyleSheet("QProgressBar::chunk { background-color: #7CFC00; }");
 
 			// 连接玩家的 hpChanged 信号到 QProgressBar 的 setValue 槽，以便在玩家生命值改变时自动更新血条
 			connect(player, &Player::hpChanged, healthBar, &QProgressBar::setValue);
@@ -77,7 +77,8 @@ void GameWindow::displayStatus()
 			ui.statusLayout->addWidget(playerName);
 			ui.statusLayout->addWidget(healthBar);
 		}
-		ui.statusLayout->addItem(new QSpacerItem(0, 20, QSizePolicy::Minimum, QSizePolicy::Expanding)); // 添加占位符以空出一定距离
+		if (i < game->getTeamCount() - 1)
+			ui.statusLayout->addItem(new QSpacerItem(0, 20, QSizePolicy::Minimum, QSizePolicy::Expanding)); // 添加占位符以空出一定距离
 	}
 }
 
