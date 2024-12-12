@@ -44,7 +44,7 @@ signals:
 
 class Action {
 public:
-	enum ActionType { Attack, Heal, Skill };// 操作类型，有攻击、防御、技能等，可以添加更多属性
+	enum ActionType { Attack, Heal, Skill };	// 操作类型，有攻击、防御、技能等，可以添加更多属性
 
 	// 构造函数，返回一个操作对象，包含操作类型、发动者、目标、伤害值、是否暴击、是否闪避等信息
 	Action(ActionType actiontype, Player* initiator, Player* target = nullptr, int damage = 0, bool isCritical = false, bool isMiss = false);
