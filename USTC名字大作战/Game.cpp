@@ -54,15 +54,16 @@ const bool& Action::getIsCritical() const { return isCritical; }
 
 const bool& Action::getIsMiss() const { return isMiss; }
 
-Player::Player(std::string name, int hp, int atk, int def, int GPA, int exp, int level)
+Player::Player(std::string name) : name(name)
 {
-	this->name = name;
-	this->hp = hp;
-	this->atk = atk;
-	this->def = def;
-	this->GPA = GPA;
-	this->exp = exp;
-	this->level = level;
+	// 使用hash算法按名字生成玩家属性，确保每个玩家的属性都是唯一的
+	std::hash<std::string> hash;
+	hp = hash(name + "hp") % 100 + 100;
+	atk = hash(name + "atk") % 10 + 10;
+	def = hash(name + "def") % 10 + 10;
+	GPA = hash(name + "GPA") % 4 + 1;
+	exp = 0;
+	level = 1;
 }
 
 const std::string& Player::getName() const { return name; }

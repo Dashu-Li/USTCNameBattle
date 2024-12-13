@@ -16,7 +16,7 @@ private:
 	int level;			// 等级
 
 public:
-	Player(std::string name = "", int hp = 100, int atk = 10, int def = 5, int GPA = 4.3, int exp = 0, int level = 1);
+	Player(std::string name = "");
 	const std::string& getName() const;	// 获取名字
 	const int& getHp() const;			// 获取生命值
 	const int& getAtk() const;			// 获取攻击力

@@ -65,7 +65,7 @@ void GameWindow::displayStatus()
 		for (auto player : game->getTeams()[i]) {
 			QLabel* playerName = new QLabel(QString::fromStdString(player->getName()), this);
 			QProgressBar* healthBar = new QProgressBar(this);
-			healthBar->setRange(0, 100);
+			healthBar->setRange(0, player->getHp());
 			healthBar->setValue(player->getHp());
 			healthBar->setFormat("%v/%m");
 			healthBar->setAlignment(Qt::AlignCenter);
