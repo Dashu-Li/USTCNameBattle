@@ -76,6 +76,8 @@ void GameWindow::displayStatus()
 
 			ui.statusLayout->addWidget(playerName);
 			ui.statusLayout->addWidget(healthBar);
+			if (!game->isTeamBattle() && player != game->getTeams()[i].back())
+				ui.statusLayout->addItem(new QSpacerItem(0, 20, QSizePolicy::Minimum, QSizePolicy::Expanding)); // 添加占位符以空出一定距离
 		}
 		if (i < game->getTeamCount() - 1)
 			ui.statusLayout->addItem(new QSpacerItem(0, 20, QSizePolicy::Minimum, QSizePolicy::Expanding)); // 添加占位符以空出一定距离
