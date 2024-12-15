@@ -11,9 +11,11 @@ private:
 	int hp;				// 生命值
 	int atk;			// 攻击力
 	int def;			// 防御力
-	int GPA;			// 绩点
+	int crit;           // 暴击率
+	int miss;           // 闪避率
+	int heal;           // 回复力
 	int exp;			// 经验值
-	int level;			// 等级
+	int GPA;			// 绩点
 
 public:
 	Player(std::string name = "");
@@ -23,15 +25,20 @@ public:
 	const int& getDef() const;			// 获取防御力
 	const int& getGPA() const;			// 获取绩点
 	const int& getExp() const;			// 获取经验值
-	const int& getLevel() const;		// 获取等级
+	const int& getCrit() const;			// 获取暴击率
+	const int& getMiss() const;			// 获取闪避率
+	const int& getHeal() const;			// 获取回复力
+
 	bool isDead() const;				// 是否死亡
 	void setHp(int hp);					// 设置生命值
 	void setAtk(int atk);				// 设置攻击力
 	void setDef(int def);				// 设置防御力
-	void setGPA(int GPA);				// 设置绩点
+	void setCrit(int crit);             // 设置暴击率
+	void setMiss(int miss);             // 设置闪避率
+	void setHeal(int heal);             // 设置回复力
 	void setExp(int exp);				// 设置经验值
-	void setLevel(int level);			// 设置等级
-	int levelUp();						// 升级
+	void setGPA(int GPA);				// 设置绩点
+
 	int addExp(int exp);				// 增加经验值
 	int addGPA(int GPA);				// 增加绩点
 	int addHp(int hp);					// 增加生命值
@@ -74,9 +81,13 @@ public:
 	bool isTeamBattle() const;									// 是否为组队对战
 	void addPlayer(std::string name, int team);					// 添加玩家
 
+	int PlayersAlive() const;                            // 存活玩家数量
+	int TeamsAlive() const;                              // 存活队伍数量
+
 	// TODO: 定义一个函数，返回一个保存了一局游戏所有操作的vector，每一回合中，按随机顺序遍历所有玩家，随机产生该玩家本回合操作，若攻击则随机选择一个敌方玩家进行攻击
+	//std::vector
 
 	Action* attack(Player* attacker, Player* defender);			// 攻击
 	Action* heal(Player* healer, Player* target = nullptr);		// 治疗
-	Action* skill(Player* caster, Player* target = nullptr);	// 技能
+	//Action* skill(Player* caster, Player* target = nullptr);	// 技能
 };
