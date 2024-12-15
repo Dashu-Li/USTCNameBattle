@@ -21,8 +21,8 @@ void Game::addPlayer(std::string name, int team)
 
 Action* Game::attack(Player* attacker, Player* defender)
 {
-	bool isCritical = rand() % 100 < defender->getCrit();
-	bool isMiss = rand() % 100 < attacker->getMiss();
+	bool isCritical = rand() % 128 < defender->getCrit();
+	bool isMiss = rand() % 128 < attacker->getMiss();
 	int damage = attacker->getAtk() - defender->getDef();
 	if (damage < 0 || isMiss) damage = 0;
 	if (isCritical) damage *= 2;
@@ -137,4 +137,15 @@ int Game::TeamsAlive() const
 		if (Playersalive) Teamsalive++;
 	}
 	return Teamsalive;
+}
+
+void Game::regroup()
+{
+	if (getTeamCount() > 1) return;
+	std::vector<Player*> temp;
+	for (int i = 1; i < teams[0].size(); i++) {
+		temp.clear(); temp.push_back(teams[0][i]);
+		teams.push_back(temp);
+	}
+	temp.clear(); temp.push_back(teams[0][0]); teams[0].clear(); teams[0].push_back(temp[0]);
 }
