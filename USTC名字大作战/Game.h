@@ -8,6 +8,7 @@ class Player : public QObject {
 
 private:
 	std::string name;	// 名字
+	int hpmax;          // 生命值上限
 	int hp;				// 生命值
 	int atk;			// 攻击力
 	int def;			// 防御力
@@ -20,6 +21,7 @@ private:
 public:
 	Player(std::string name = "");
 	const std::string& getName() const;	// 获取名字
+	const int& getHpMax() const;	    // 获取生命值上限
 	const int& getHp() const;			// 获取生命值
 	const int& getAtk() const;			// 获取攻击力
 	const int& getDef() const;			// 获取防御力
@@ -70,10 +72,17 @@ private:
 
 };
 
+struct Weight {             // 行动权重
+	int attacker, defender, healer, treater;
+	// 构造函数，方便初始化
+	Weight(int a, int d, int h, int t) : attacker(a), defender(d), healer(h), treater(t) {}
+};
+
 class Game {
 private:
 	int teamCount;								// 队伍数量
 	std::vector<std::vector<Player*>> teams;	// 队伍玩家列表
+	std::vector<std::vector<Weight>> weight;   // 行动权重
 public:
 	Game();
 	const int& getTeamCount() const;							// 获取队伍数量
@@ -86,6 +95,7 @@ public:
 	void Regroup();                                      // 如果玩家未分组，即只有一组，重新分组为一人一组
 
 	// TODO: 定义一个函数，返回一个保存了一局游戏所有操作的vector，每一回合中，按随机顺序遍历所有玩家，随机产生该玩家本回合操作，若攻击则随机选择一个敌方玩家进行攻击
+	Action GenerateAttack();
 	void GenerateGame();                        // 生成对局
 
 	Action* attack(Player* attacker, Player* defender);			// 攻击

@@ -35,9 +35,9 @@ Action* Game::attack(Player* attacker, Player* defender)
 
 Action* Game::heal(Player* healer, Player* target)
 {
-	int heal = healer->getHeal() + target->getDef();
+	int heal = std::min( healer->getHeal() + target->getDef(), target->getHpMax() - target->getHp() );
 	target->addHp(heal);
-	return new Action(Action::Heal, healer, target);
+	return new Action(Action::Heal, healer, target, heal);
 }
 /*
 Action* Game::skill(Player* caster, Player* target)
@@ -75,6 +75,8 @@ Player::Player(std::string name) : name(name)
 const std::string& Player::getName() const { return name; }
 
 const int& Player::getHp() const { return hp; }
+
+const int& Player::getHpMax() const { return hpmax; }
 
 const int& Player::getAtk() const { return atk; }
 
@@ -153,11 +155,62 @@ void Game::Regroup()
 	temp.clear(); temp.push_back(teams[0][0]); teams[0].clear(); teams[0].push_back(temp[0]);
 }
 
-struct Weight {
-	int attacker, defender, healer, treater;
-	// 构造函数，方便初始化
-	Weight(int a, int d, int h, int t) : attacker(a), defender(d), healer(h), treater(t) {}
-};
+Action Game::GenerateAttack()
+{
+	// 刷新权重
+	for (int i = 0; i < getTeamCount(); i++)
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead()) {
+				weight[i][j].attacker = std::max(PlayersAlive(), weight[i][j].attacker + 1);
+				weight[i][j].defender = std::max(PlayersAlive(), weight[i][j].defender + 1);
+			}
+
+	int total_attacker = 0, total_defender = 0, attacker_choosed = 0, defender_choosed = 0, temp;
+	int attacker_i, attacker_j, defender_i, defender_j;
+
+	// 按权重随机产生攻击者
+	for (int i = 0; i < getTeamCount(); i++)
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead() && weight[i][j].attacker > 0)
+				total_attacker += weight[i][j].attacker;
+	attacker_choosed = rand() % total_attacker; temp = 0;                // 将所有人权重相加，随机生成一个数，看他落在哪个人的前缀和之内
+	for (int i = 0; i < getTeamCount(); i++) {
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead() && weight[i][j].attacker > 0) {
+				if (temp <= attacker_choosed && temp + weight[i][j].attacker > attacker_choosed) { temp += weight[i][j].attacker; attacker_i = i; attacker_j = j; break; }
+				temp += weight[i][j].attacker;
+			}
+		if (temp > attacker_choosed) break;
+	}
+
+	// 按权重随机产生防御者
+	for (int i = 0; i < getTeamCount(); i++) {
+		if (i == attacker_i) continue;                        // 避免友伤
+		for (int j = 0; j < getTeamCount(); j++)
+			if (!teams[i][j]->isDead() && weight[i][j].defender > 0)
+				total_defender += weight[i][j].defender;
+	}
+	defender_choosed = rand() % total_defender; temp = 0;
+	for (int i = 0; i < getTeamCount(); i++) {
+		if (i == attacker_i) continue;
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead() && weight[i][j].defender > 0) {
+				if (temp <= defender_choosed && temp + weight[i][j].defender > defender_choosed) { temp += weight[i][j].defender; defender_i = i; defender_j = j; break; }
+				temp += weight[i][j].defender;
+			}
+		if (temp > defender_choosed) break;
+	}
+
+	// 计算伤害
+	bool isCritical = rand() % 128 < teams[attacker_i][attacker_j]->getCrit();
+	bool isMiss = rand() % 128 < teams[defender_i][defender_j]->getMiss();
+	int damage = teams[attacker_i][attacker_j]->getAtk() - teams[defender_i][defender_j]->getDef();
+	if (damage < 0 || isMiss) damage = 0;
+	if (isCritical) damage *= 2;
+	teams[defender_i][defender_j]->addHp(-damage);
+
+	return Action(Action::Attack, teams[attacker_i][attacker_j], teams[defender_i][defender_j], damage, isCritical, isMiss);
+}
 
 void Game::GenerateGame()
 {
@@ -165,14 +218,27 @@ void Game::GenerateGame()
 
 	Regroup();
 	//初始化每个玩家的行动权重，初始值为存活玩家数，每项行动完成后，该行动权重改为1
-	std::vector<std::vector<Weight>> weight;
+	//std::vector<std::vector<Weight>> weight;
 	weight.resize(getTeamCount());
 	for (int i = 0; i < getTeamCount(); i++)
 		for (int j = 0; j < teams[i].size(); j++)
 			weight[i].emplace_back(PlayersAlive(), PlayersAlive(), PlayersAlive(), PlayersAlive());
 
+	std::vector<Action> progress;
 	while(TeamsAlive() > 1) {
-		//if (rand() % 3) GenerateActionHeal();
-		//	else GenerateActionAttack();
+		int seed = rand() % 10;
+		switch (seed) {
+			case 0:
+			case 1:
+			case 2:
+			case 3: {
+				progress.push_back(GenerateAttack());
+			}
+			case 4:
+			case 5:
+			case 6:
+			case 7: {
+			}
+		}
 	}
 }
