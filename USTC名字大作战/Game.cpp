@@ -186,7 +186,7 @@ Action Game::GenerateAttack()
 	// 按权重随机产生防御者
 	for (int i = 0; i < getTeamCount(); i++) {
 		if (i == attacker_i) continue;                        // 避免友伤
-		for (int j = 0; j < getTeamCount(); j++)
+		for (int j = 0; j < teams[i].size(); j++)
 			if (!teams[i][j]->isDead() && weight[i][j].defender > 0)
 				total_defender += weight[i][j].defender;
 	}
@@ -212,13 +212,60 @@ Action Game::GenerateAttack()
 	return Action(Action::Attack, teams[attacker_i][attacker_j], teams[defender_i][defender_j], damage, isCritical, isMiss);
 }
 
+
+Action Game::GenerateHeal()
+{
+	// 刷新权重
+	for (int i = 0; i < getTeamCount(); i++)
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead()) {
+				weight[i][j].healer = std::max(PlayersAlive(), weight[i][j].healer + 1);
+				weight[i][j].healee = std::max(PlayersAlive(), weight[i][j].healee + 1);
+			}
+
+	int total_healer = 0, total_healee = 0, healer_choosed = 0, healee_choosed = 0, temp;
+	int healer_i, healer_j, healee_i, healee_j;
+
+	// 按权重随机产生治疗者
+	for (int i = 0; i < getTeamCount(); i++)
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead() && weight[i][j].healer > 0)
+				total_healer += weight[i][j].healer;
+	healer_choosed = rand() % total_healer; temp = 0;
+	for (int i = 0; i < getTeamCount(); i++) {
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead() && weight[i][j].healer > 0) {
+				if (temp <= healer_choosed && temp + weight[i][j].healer > healer_choosed) { temp += weight[i][j].healer; healer_i = i; healer_j = j; break; }
+				temp += weight[i][j].healer;
+			}
+		if (temp > healer_choosed) break;
+	}
+
+	// 按权重随机产生被治疗者
+	healee_i = healer_i;
+	for (int j = 0; j < teams[healee_i].size(); j++)
+		if (!teams[healee_i][j]->isDead() && weight[healee_i][j].healee > 0)
+			total_healee += weight[healee_i][j].healee;
+	healee_choosed = rand() % total_healee; temp = 0;
+	for (int j = 0; j < teams[healee_i].size(); j++)
+		if (!teams[healee_i][j]->isDead() && weight[healee_i][j].healee > 0) {
+			if (temp <= healee_choosed && temp + weight[healee_i][j].healee > healer_choosed) { healee_j = j; break; }
+			temp += weight[healee_i][j].healee;
+		}
+
+	// 计算回血
+	int heal = std::min(teams[healee_i][healee_j]->getHpMax() - teams[healee_i][healee_j]->getHp(), teams[healer_i][healer_j]->getHeal() + teams[healee_i][healee_j]->getDef());
+	teams[healee_i][healee_j]->addHp(heal);
+
+	return Action(Action::Heal, teams[healer_i][healer_j], teams[healee_i][healee_j], heal);
+}
+
 void Game::GenerateGame()
 {
 	srand((unsigned)time(NULL));                  //刷新随机种子
 
 	Regroup();
 	//初始化每个玩家的行动权重，初始值为存活玩家数，每项行动完成后，该行动权重改为1
-	//std::vector<std::vector<Weight>> weight;
 	weight.resize(getTeamCount());
 	for (int i = 0; i < getTeamCount(); i++)
 		for (int j = 0; j < teams[i].size(); j++)
@@ -238,6 +285,7 @@ void Game::GenerateGame()
 			case 5:
 			case 6:
 			case 7: {
+				progress.push_back(GenerateHeal());
 			}
 		}
 	}

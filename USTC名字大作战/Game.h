@@ -73,9 +73,9 @@ private:
 };
 
 struct Weight {             // 行动权重
-	int attacker, defender, healer, treater;
+	int attacker, defender, healer, healee;
 	// 构造函数，方便初始化
-	Weight(int a, int d, int h, int t) : attacker(a), defender(d), healer(h), treater(t) {}
+	Weight(int a, int d, int h, int he) : attacker(a), defender(d), healer(h), healee(he) {}
 };
 
 class Game {
@@ -96,6 +96,7 @@ public:
 
 	// TODO: 定义一个函数，返回一个保存了一局游戏所有操作的vector，每一回合中，按随机顺序遍历所有玩家，随机产生该玩家本回合操作，若攻击则随机选择一个敌方玩家进行攻击
 	Action GenerateAttack();
+	Action GenerateHeal();
 	void GenerateGame();                        // 生成对局
 
 	Action* attack(Player* attacker, Player* defender);			// 攻击
