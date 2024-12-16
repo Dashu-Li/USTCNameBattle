@@ -1,5 +1,8 @@
 ﻿#include <algorithm>
 #include <random>
+#include <ctime>
+#include <vector>
+#include <cmath>
 #include "Game.h"
 
 Game::Game() : teamCount(0) {}
@@ -59,12 +62,12 @@ Player::Player(std::string name) : name(name)
 {
 	// 使用hash算法按名字生成玩家属性，确保每个玩家的属性都是唯一的
 	std::hash<std::string> hash;
-	hp = hash(name + "hp") % 128 + 128;
-	atk = hash(name + "atk") % 32 + 32;
-	def = hash(name + "def") % 16 + 16;
-	crit = hash(name + "crit") % 8 + 8;
-	miss = hash(name + "miss") % 8 + 8;
-	heal = hash(name + "heal") & 16 + 16;
+	hp = hash(name + "hp") % 128 + 128;          // 血量: 128 - 255
+	atk = hash(name + "atk") % 32 + 32;          // 攻击力: 32 - 63
+	def = hash(name + "def") % 16 + 16;          // 防御力: 16 - 31
+	crit = hash(name + "crit") % 8 + 8;          // 暴击率: ( 8 - 15 ) / 128      即约为 1/16 - 1/8
+	miss = hash(name + "miss") % 8 + 8;          // 闪避率: ( 8 - 15 ) / 128      即约为 1/16 - 1/8
+	heal = hash(name + "heal") & 16 + 16;        // 回复力: 16 - 31
 	GPA = 0;
 	exp = 0;
 }
@@ -139,7 +142,7 @@ int Game::TeamsAlive() const
 	return Teamsalive;
 }
 
-void Game::regroup()
+void Game::Regroup()
 {
 	if (getTeamCount() > 1) return;
 	std::vector<Player*> temp;
@@ -148,4 +151,28 @@ void Game::regroup()
 		teams.push_back(temp);
 	}
 	temp.clear(); temp.push_back(teams[0][0]); teams[0].clear(); teams[0].push_back(temp[0]);
+}
+
+struct Weight {
+	int attacker, defender, healer, treater;
+	// 构造函数，方便初始化
+	Weight(int a, int d, int h, int t) : attacker(a), defender(d), healer(h), treater(t) {}
+};
+
+void Game::GenerateGame()
+{
+	srand((unsigned)time(NULL));                  //刷新随机种子
+
+	Regroup();
+	//初始化每个玩家的行动权重，初始值为存活玩家数，每项行动完成后，该行动权重改为1
+	std::vector<std::vector<Weight>> weight;
+	weight.resize(getTeamCount());
+	for (int i = 0; i < getTeamCount(); i++)
+		for (int j = 0; j < teams[i].size(); j++)
+			weight[i].emplace_back(PlayersAlive(), PlayersAlive(), PlayersAlive(), PlayersAlive());
+
+	while(TeamsAlive() > 1) {
+		//if (rand() % 3) GenerateActionHeal();
+		//	else GenerateActionAttack();
+	}
 }

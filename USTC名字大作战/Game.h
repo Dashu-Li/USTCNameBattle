@@ -83,10 +83,10 @@ public:
 
 	int PlayersAlive() const;                            // 存活玩家数量
 	int TeamsAlive() const;                              // 存活队伍数量
-	void regroup();                                      // 如果玩家未分组，即只有一组，重新分组为一人一组
+	void Regroup();                                      // 如果玩家未分组，即只有一组，重新分组为一人一组
 
 	// TODO: 定义一个函数，返回一个保存了一局游戏所有操作的vector，每一回合中，按随机顺序遍历所有玩家，随机产生该玩家本回合操作，若攻击则随机选择一个敌方玩家进行攻击
-	//std::vector
+	void GenerateGame();                        // 生成对局
 
 	Action* attack(Player* attacker, Player* defender);			// 攻击
 	Action* heal(Player* healer, Player* target = nullptr);		// 治疗
