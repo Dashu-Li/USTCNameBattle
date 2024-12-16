@@ -40,6 +40,7 @@ void GameWindow::on_battleStartButton_clicked()
 		for (int j = 0; j < names.size(); j++)
 			game->addPlayer(names[j].toStdString(), i);							// 添加玩家
 	}
+	if (!game->isTeamBattle()) game->Regroup();									// 如果是个人战, 则重新分组
 	displayStatus();															// 显示状态
 	// TODO: 输出对战结果
 	delete game;																// 删除游戏对象
@@ -65,7 +66,7 @@ void GameWindow::displayStatus()
 		for (auto player : game->getTeams()[i]) {
 			QLabel* playerName = new QLabel(QString::fromStdString(player->getName()), this);
 			QProgressBar* healthBar = new QProgressBar(this);
-			healthBar->setRange(0, player->getHp());
+			healthBar->setRange(0, player->getHpMax());
 			healthBar->setValue(player->getHp());
 			healthBar->setFormat("%v/%m");
 			healthBar->setAlignment(Qt::AlignCenter);
