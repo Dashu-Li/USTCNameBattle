@@ -17,6 +17,8 @@ private:
 	int heal;           // 回复力
 	int exp;			// 经验值
 	double GPA;			// 绩点
+	int killCount;		// 击杀数
+	Player* killedBy;	// 被谁杀死
 
 public:
 	Player(std::string name = "");
@@ -30,6 +32,8 @@ public:
 	const int& getCrit() const;			// 获取暴击率
 	const int& getMiss() const;			// 获取闪避率
 	const int& getHeal() const;			// 获取回复力
+	const int& getKillCount() const;	// 获取击杀数
+	const Player* getKilledBy() const;	// 获取被谁杀死
 
 	bool isDead() const;				// 是否死亡
 	void setHp(int hp);					// 设置生命值
@@ -40,12 +44,14 @@ public:
 	void setHeal(int heal);             // 设置回复力
 	void setExp(int exp);				// 设置经验值
 	void setGPA(int GPA);				// 设置绩点
+	void setKilledBy(Player* player);	// 设置被谁杀死
 
 	int addExp(int exp);				// 增加经验值
 	int addGPA(int GPA);				// 增加绩点
 	int addHp(int hp);					// 增加生命值
 	int addAtk(int atk);				// 增加攻击力
 	int addDef(int def);				// 增加防御力
+	int addKillCount();					// 击杀数加一
 
 signals:
 	void hpChanged(int newHp);			// 生命值改变信号

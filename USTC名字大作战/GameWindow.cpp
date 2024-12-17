@@ -72,7 +72,7 @@ void GameWindow::displayAction(Action* action)
 		// 若目标死亡则显示被击倒了
 		ui.battleEdit->append(QString::fromStdString(action->getInitiator()->getName()) + (action->getIsCritical() ? "发起<font color='blue'>暴击</font>，" : "发起攻击，") + QString::fromStdString(action->getTarget()->getName()) + (action->getIsMiss() ? "<font color='blue'>闪避</font>，" : "") + "受到" + "<font color='red'>" + QString::number(action->getValue()) + "</font>" + "点伤害");
 		if (action->getTarget()->isDead())
-			ui.battleEdit->append(QString::fromStdString(action->getTarget()->getName()) + "被击倒了");
+			ui.battleEdit->append("    " + QString::fromStdString(action->getTarget()->getName()) + "被击倒了");
 		break;
 	case Action::Heal:
 		// 显示发动治疗，紧接着显示目标恢复生命值，用绿色显示数字

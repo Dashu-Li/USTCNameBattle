@@ -105,6 +105,10 @@ Action* Game::GenerateAttack()
 	if (damage < 0 || isMiss) damage = 0;
 	if (isCritical) damage *= 2;
 	teams[defender_i][defender_j]->addHp(-damage);
+	if (teams[defender_i][defender_j]->isDead()) {
+		teams[attacker_i][attacker_j]->addKillCount();
+		teams[defender_i][defender_j]->setKilledBy(teams[attacker_i][attacker_j]);
+	}
 	Action* action = new Action(Action::Attack, teams[attacker_i][attacker_j], teams[defender_i][defender_j], damage, isCritical, isMiss);
 	emit generateAction(action);
 	return action;
@@ -177,15 +181,15 @@ void Game::GenerateGame()
 		case 0:
 		case 1:
 		case 2:
-		case 3: {
+		case 3:
 			progress.push_back(GenerateAttack());
-		}
+			break;
 		case 4:
 		case 5:
 		case 6:
-		case 7: {
+		case 7:
 			progress.push_back(GenerateHeal());
-		}
+			break;
 		}
 	}
 }
@@ -206,7 +210,8 @@ const bool& Action::getIsCritical() const { return isCritical; }
 
 const bool& Action::getIsMiss() const { return isMiss; }
 
-Player::Player(std::string name) : name(name)
+Player::Player(std::string name) :
+	name(name), GPA(0), exp(0), killCount(0), killedBy(nullptr)
 {
 	// 使用hash算法按名字生成玩家属性，确保每个玩家的属性都是唯一的
 	std::hash<std::string> hash;
@@ -216,8 +221,6 @@ Player::Player(std::string name) : name(name)
 	crit = hash(name + "crit") % 8 + 8;				// 暴击率: ( 8 - 15 ) / 128	即约为 1/16 - 1/8
 	miss = hash(name + "miss") % 8 + 8;				// 闪避率: ( 8 - 15 ) / 128	即约为 1/16 - 1/8
 	heal = hash(name + "heal") & 16 + 16;			// 回复力: 16 - 31
-	GPA = 0;
-	exp = 0;
 }
 
 const std::string& Player::getName() const { return name; }
@@ -240,6 +243,10 @@ const int& Player::getMiss() const { return miss; }
 
 const int& Player::getHeal() const { return heal; }
 
+const int& Player::getKillCount() const { return killCount; }
+
+const Player* Player::getKilledBy() const { return killedBy; }
+
 bool Player::isDead() const { return hp <= 0; }
 
 void Player::setHp(int hp) { this->hp = hp; emit hpChanged(hp); }
@@ -258,6 +265,8 @@ void Player::setExp(int exp) { this->exp = exp; }
 
 void Player::setGPA(int GPA) { this->GPA = GPA; }
 
+void Player::setKilledBy(Player* player) { killedBy = player; }
+
 int Player::addExp(int exp) { this->exp += exp; return exp; }
 
 int Player::addGPA(int GPA) { this->GPA += GPA; return GPA; }
@@ -267,3 +276,5 @@ int Player::addHp(int addhp) { emit hpChanged(hp += std::min(hpmax - hp, std::ma
 int Player::addAtk(int atk) { this->atk += atk; return atk; }
 
 int Player::addDef(int def) { this->def += def; return def; }
+
+int Player::addKillCount() { return ++killCount; }
