@@ -119,7 +119,7 @@ Action* Game::GenerateAttack()
 	// 计算经验
 	teams[attacker_i][attacker_j]->addExp(damage);
 
-	Action* action = new Action(Action::Attack, teams[attacker_i][attacker_j], teams[defender_i][defender_j], damage, isCritical, isMiss);
+	Action* action = new Action(Action::Attack, teams[attacker_i][attacker_j], teams[defender_i][defender_j], damage, 0, isCritical, isMiss);
 	emit generateAction(action);
 	return action;
 }
@@ -175,8 +175,81 @@ Action* Game::GenerateHeal()
 	// 计算经验
 	teams[healer_i][healer_j]->addExp(heal);
 
-	Action* action = new Action(Action::Heal, teams[healer_i][healer_j], teams[healee_i][healee_j], heal);
+	Action* action = new Action(Action::Heal, teams[healer_i][healer_j], teams[healee_i][healee_j], 0, heal);
 	emit generateAction(action);
+	return action;
+}
+
+Action* Game::GenerateLifesteal()
+{
+	// 刷新权重
+	for (int i = 0; i < getTeamCount(); i++)
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead()) {
+				weight[i][j].attacker = std::max(PlayersAlive(), weight[i][j].attacker + 1);
+				weight[i][j].defender = std::max(PlayersAlive(), weight[i][j].defender + 1);
+			}
+
+	int total_attacker = 0, total_defender = 0, attacker_choosed = 0, defender_choosed = 0, temp = 0;
+	int attacker_i = 0, attacker_j = 0, defender_i = 0, defender_j = 0;
+
+	// 按权重随机产生攻击者
+	for (int i = 0; i < getTeamCount(); i++)
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead() && weight[i][j].attacker > 0)
+				total_attacker += weight[i][j].attacker;
+	attacker_choosed = rand() % total_attacker; temp = 0;
+	for (int i = 0; i < getTeamCount(); i++) {
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead() && weight[i][j].attacker > 0) {
+				if (temp <= attacker_choosed && temp + weight[i][j].attacker > attacker_choosed) { temp += weight[i][j].attacker; attacker_i = i; attacker_j = j; break; }
+				temp += weight[i][j].attacker;
+			}
+		if (temp > attacker_choosed) break;
+	}
+
+	// 按权重随机产生防御者
+	for (int i = 0; i < getTeamCount(); i++) {
+		if (i == attacker_i) continue;									// 避免友伤
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead() && weight[i][j].defender > 0)
+				total_defender += weight[i][j].defender;
+	}
+	defender_choosed = rand() % total_defender; temp = 0;
+	for (int i = 0; i < getTeamCount(); i++) {
+		if (i == attacker_i) continue;
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead() && weight[i][j].defender > 0) {
+				if (temp <= defender_choosed && temp + weight[i][j].defender > defender_choosed) { temp += weight[i][j].defender; defender_i = i; defender_j = j; break; }
+				temp += weight[i][j].defender;
+			}
+		if (temp > defender_choosed) break;
+	}
+
+	// 重置攻击者和防御者的权重
+	weight[attacker_i][attacker_j].attacker = 0;
+	weight[defender_i][defender_j].defender = 0;
+
+	// 计算伤害
+	bool isMiss = rand() % 128 < teams[defender_i][defender_j]->getMiss();
+	int damage = teams[attacker_i][attacker_j]->getAtk() - teams[defender_i][defender_j]->getDef();
+	if (damage < 0 || isMiss) damage = 0;
+	teams[defender_i][defender_j]->addHp(-damage);
+	if (teams[defender_i][defender_j]->isDead()) {
+		teams[attacker_i][attacker_j]->addKillCount();
+		teams[defender_i][defender_j]->setKilledBy(teams[attacker_i][attacker_j]);
+	}
+
+	// 计算回血
+	int heal = std::min(damage / 2, teams[attacker_i][attacker_j]->getHpMax() - teams[attacker_i][attacker_j]->getHp());
+	if (isMiss) heal = 0;
+	teams[attacker_i][attacker_j]->addHp(heal);
+
+	// 计算经验
+	teams[attacker_i][attacker_j]->addExp(damage + heal);
+
+	Action* action = new Action(Action::Lifesteal, teams[attacker_i][attacker_j], teams[defender_i][defender_j], damage, heal, 0, isMiss);
+	//emit generateAction(action);
 	return action;
 }
 
@@ -221,6 +294,9 @@ void Game::GenerateGame()
 			case 5:
 				progress.push_back(GenerateHeal());
 				break;
+			case 6:
+				progress.push_back(GenerateLifesteal());
+				break;
 		}
 		// 暂停
 		// std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -229,8 +305,8 @@ void Game::GenerateGame()
 	std::vector<Player*> rank = CalculateGPA();
 }
 
-Action::Action(ActionType actiontype, Player* initiator, Player* target, int value, bool isCritical, bool isMiss) :
-	actiontype(actiontype), initiator(initiator), target(target), value(value), isCritical(isCritical), isMiss(isMiss)
+Action::Action(ActionType actiontype, Player* initiator, Player* target, int damage, int heal, bool isCritical, bool isMiss) :
+	actiontype(actiontype), initiator(initiator), target(target), damage(damage), heal(heal), isCritical(isCritical), isMiss(isMiss)
 {}
 
 const Action::ActionType& Action::getActionType() const { return actiontype; }
@@ -239,7 +315,9 @@ const Player* Action::getInitiator() const { return initiator; }
 
 const Player* Action::getTarget() const { return target; }
 
-const int& Action::getValue() const { return value; }
+const int& Action::getDamage() const { return damage; }
+
+const int& Action::getHeal() const { return heal; }
 
 const bool& Action::getIsCritical() const { return isCritical; }
 

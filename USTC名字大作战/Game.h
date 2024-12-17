@@ -54,7 +54,7 @@ public:
 	int addKillCount();					// 击杀数加一
 
 	bool operator<(const Player& other) const {		// 重载<运算符
-		return (isDead() < other.isDead()) || (isDead() == other.isDead() && getExp() > other.getExp());  // 按照 1.是否存活；2.经验值 升序排列，GPA高的“比较小”，排在最前面
+		return (isDead() < other.isDead()) || (isDead() == other.isDead() && getExp() > other.getExp());		// 按照 1.是否存活；2.经验值 升序排列，GPA高的“比较小”，排在最前面
 	}
 
 signals:
@@ -64,14 +64,15 @@ signals:
 
 class Action {
 public:
-	enum ActionType { Attack, Heal, Skill };	// 操作类型，有攻击、防御、技能等，可以添加更多属性
+	enum ActionType { Attack, Heal, Lifesteal, Ascension };			// 操作类型，有攻击、防御、吸血、飞升等，可以添加更多属性
 
 	// 构造函数，返回一个操作对象，包含操作类型、发动者、目标、数值、是否暴击、是否闪避等信息
-	Action(ActionType actiontype, Player* initiator, Player* target = nullptr, int value = 0, bool isCritical = false, bool isMiss = false);
+	Action(ActionType actiontype, Player* initiator, Player* target = nullptr, int damage = 0, int heal = 0, bool isCritical = false, bool isMiss = false);
 	const ActionType& getActionType() const;	// 获取操作类型
 	const Player* getInitiator() const;			// 获取发动者
 	const Player* getTarget() const;			// 获取目标
-	const int& getValue() const;				// 获取数值
+	const int& getDamage() const;				// 获取伤害值
+	const int& getHeal() const;					// 获取回复值
 	const bool& getIsCritical() const;			// 获取是否暴击
 	const bool& getIsMiss() const;				// 获取是否闪避
 
@@ -79,7 +80,8 @@ private:
 	ActionType actiontype;	// 操作类型
 	Player* initiator;		// 发动者
 	Player* target;			// 目标
-	int value;				// 数值
+	int damage;				// 伤害值
+	int heal;				// 回复值
 	bool isCritical;		// 是否暴击
 	bool isMiss;			// 是否闪避
 
@@ -110,8 +112,10 @@ public:
 	void Regroup();												// 如果玩家未分组，即只有一组，重新分组为一人一组
 
 	// TODO: 定义一个函数，返回一个保存了一局游戏所有操作的vector，每一回合中，按随机顺序遍历所有玩家，随机产生该玩家本回合操作，若攻击则随机选择一个敌方玩家进行攻击
-	Action* GenerateAttack();
-	Action* GenerateHeal();
+	Action* GenerateAttack();			// 普通攻击
+	Action* GenerateHeal();				// 治疗
+	Action* GenerateLifesteal();		// 吸血，实质是没有暴击的普通攻击，同时让吸血者回复造成伤害一半的血量
+	Action* GenerateAscention();		// 飞升，即所有属性小幅增长
 	std::vector<Player*> CalculateGPA();										// 根据对局表现计算GPA
 	void GenerateGame();										// 生成对局
 
