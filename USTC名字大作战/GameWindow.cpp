@@ -86,8 +86,8 @@ void GameWindow::displayStatus()
 	ui.battleEdit->clear();											// 清空battleEdit
 	for (int i = 0; i < game->getTeamCount(); i++) {
 		for (auto player : game->getTeams()[i]) {
-			// battleEdit一行显示一个玩家名字 HP 攻 防 GPA
-			ui.battleEdit->append(QString::fromStdString(player->getName()) + " HP: " + QString::number(player->getHp()) + " 攻: " + QString::number(player->getAtk()) + " 防: " + QString::number(player->getDef()) + " GPA: " + QString::number(player->getGPA()));
+			// battleEdit一行显示一个玩家名字 HP 攻 防 智（暴击） 敏（闪避） 抗（回复）
+			ui.battleEdit->append(QString::fromStdString(player->getName()) + " HP: " + QString::number(player->getHp()) + " 攻: " + QString::number(player->getAtk()) + " 防: " + QString::number(player->getDef()) + " 智: " + QString::number(player->getCrit()) + " 敏: " + QString::number(player->getMiss()) + " 抗: " + QString::number(player->getHeal()));
 
 			QLabel* playerName = new QLabel(QString::fromStdString(player->getName()), this);
 			QProgressBar* healthBar = new QProgressBar(this);

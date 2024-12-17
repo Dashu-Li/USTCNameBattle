@@ -255,7 +255,7 @@ Player::Player(std::string name) :
 	def = hash(name + "def") % 16 + 16;				// 防御力: 16 - 31
 	crit = hash(name + "crit") % 8 + 8;				// 暴击率: ( 8 - 15 ) / 128	即约为 1/16 - 1/8
 	miss = hash(name + "miss") % 8 + 8;				// 闪避率: ( 8 - 15 ) / 128	即约为 1/16 - 1/8
-	heal = hash(name + "heal") & 16 + 16;			// 回复力: 16 - 31
+	heal = hash(name + "heal") % 16 + 16;			// 回复力: 16 - 31
 }
 
 const std::string& Player::getName() const { return name; }
