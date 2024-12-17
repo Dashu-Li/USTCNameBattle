@@ -22,31 +22,6 @@ void Game::addPlayer(std::string name, int team)
 	teams[team].push_back(new Player(name));
 }
 
-Action* Game::attack(Player* attacker, Player* defender)
-{
-	bool isCritical = rand() % 128 < defender->getCrit();
-	bool isMiss = rand() % 128 < attacker->getMiss();
-	int damage = attacker->getAtk() - defender->getDef();
-	if (damage < 0 || isMiss) damage = 0;
-	if (isCritical) damage *= 2;
-	defender->addHp(-damage);
-	return new Action(Action::Attack, attacker, defender, damage, isCritical, isMiss);
-}
-
-Action* Game::heal(Player* healer, Player* target)
-{
-	int heal = std::min(healer->getHeal() + target->getDef(), target->getHpMax() - target->getHp());
-	target->addHp(heal);
-	return new Action(Action::Heal, healer, target, heal);
-}
-/*
-Action* Game::skill(Player* caster, Player* target)
-{
-	// TODO: 实现技能逻辑
-	return new Action(Action::Skill, caster, target);
-}
-*/         //先砍掉
-
 int Game::PlayersAlive() const
 {
 	int Playersalive = 0;
@@ -77,7 +52,7 @@ void Game::Regroup()
 	teams[0].resize(1);
 }
 
-Action Game::GenerateAttack()
+Action* Game::GenerateAttack()
 {
 	// 刷新权重
 	for (int i = 0; i < getTeamCount(); i++)
@@ -130,12 +105,13 @@ Action Game::GenerateAttack()
 	if (damage < 0 || isMiss) damage = 0;
 	if (isCritical) damage *= 2;
 	teams[defender_i][defender_j]->addHp(-damage);
-
-	return Action(Action::Attack, teams[attacker_i][attacker_j], teams[defender_i][defender_j], damage, isCritical, isMiss);
+	Action* action = new Action(Action::Attack, teams[attacker_i][attacker_j], teams[defender_i][defender_j], damage, isCritical, isMiss);
+	emit generateAction(action);
+	return action;
 }
 
 
-Action Game::GenerateHeal()
+Action* Game::GenerateHeal()
 {
 	// 刷新权重
 	for (int i = 0; i < getTeamCount(); i++)
@@ -178,8 +154,9 @@ Action Game::GenerateHeal()
 	// 计算回血
 	int heal = std::min(teams[healee_i][healee_j]->getHpMax() - teams[healee_i][healee_j]->getHp(), teams[healer_i][healer_j]->getHeal() + teams[healee_i][healee_j]->getDef());
 	teams[healee_i][healee_j]->addHp(heal);
-
-	return Action(Action::Heal, teams[healer_i][healer_j], teams[healee_i][healee_j], heal);
+	Action* action = new Action(Action::Heal, teams[healer_i][healer_j], teams[healee_i][healee_j], heal);
+	emit generateAction(action);
+	return action;
 }
 
 void Game::GenerateGame()
@@ -193,7 +170,7 @@ void Game::GenerateGame()
 		for (int j = 0; j < teams[i].size(); j++)
 			weight[i].push_back(Weight(PlayersAlive(), PlayersAlive(), PlayersAlive(), PlayersAlive()));
 
-	std::vector<Action> progress;
+	std::vector<Action*> progress;
 	while (TeamsAlive() > 1) {
 		int seed = rand() % 10;
 		switch (seed) {
@@ -213,13 +190,17 @@ void Game::GenerateGame()
 	}
 }
 
-Action::Action(ActionType actiontype, Player* initiator, Player* target, int damage, bool isCritical, bool isMiss) :
-	actiontype(actiontype), initiator(initiator), target(target), damage(damage), isCritical(isCritical), isMiss(isMiss)
+Action::Action(ActionType actiontype, Player* initiator, Player* target, int value, bool isCritical, bool isMiss) :
+	actiontype(actiontype), initiator(initiator), target(target), value(value), isCritical(isCritical), isMiss(isMiss)
 {}
 
 const Action::ActionType& Action::getActionType() const { return actiontype; }
 
-const int& Action::getDamage() const { return damage; }
+const Player* Action::getInitiator() const { return initiator; }
+
+const Player* Action::getTarget() const { return target; }
+
+const int& Action::getValue() const { return value; }
 
 const bool& Action::getIsCritical() const { return isCritical; }
 
@@ -281,7 +262,7 @@ int Player::addExp(int exp) { this->exp += exp; return exp; }
 
 int Player::addGPA(int GPA) { this->GPA += GPA; return GPA; }
 
-int Player::addHp(int hp) { emit hpChanged(this->hp += hp); return hp; }
+int Player::addHp(int addhp) { emit hpChanged(hp += std::min(hpmax - hp, std::max(-hp, addhp))); return addhp; }
 
 int Player::addAtk(int atk) { this->atk += atk; return atk; }
 

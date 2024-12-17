@@ -41,8 +41,10 @@ void GameWindow::on_battleStartButton_clicked()
 			game->addPlayer(names[j].toStdString(), i);							// 添加玩家
 	}
 	if (!game->isTeamBattle()) game->Regroup();									// 如果是个人战, 则重新分组
+	connect(game, &Game::generateAction, this, &GameWindow::displayAction);		// 连接游戏的generateAction信号到displayAction槽
 	displayStatus();															// 显示状态
-	// TODO: 输出对战结果
+	game->GenerateGame();														// 生成对局
+	disconnect(game, &Game::generateAction, this, &GameWindow::displayAction);	// 断开连接
 	delete game;																// 删除游戏对象
 }
 
@@ -60,10 +62,32 @@ void GameWindow::on_PlayAgainButton_clicked()
 	ui.PlayAgainButton->setEnabled(false);							// 禁用再玩一局按钮
 }
 
+void GameWindow::displayAction(Action* action)
+{
+	switch (action->getActionType()) {
+	case Action::Attack:
+		// 若暴击则显示发动暴击，否则显示发动攻击
+		// 若闪避则显示被闪避
+		// 紧接着显示目标受到伤害值，用红色显示数字
+		// 若目标死亡则显示被击倒了
+		ui.battleEdit->append(QString::fromStdString(action->getInitiator()->getName()) + (action->getIsCritical() ? "发动暴击，" : "发动攻击，") + QString::fromStdString(action->getTarget()->getName()) + (action->getIsMiss() ? "闪避，" : "") + "受到" + "<font color='red'>" + QString::number(action->getValue()) + "</font>" + "点伤害");
+		if (action->getTarget()->isDead())
+			ui.battleEdit->append(QString::fromStdString(action->getTarget()->getName()) + "被击倒了");
+		break;
+	case Action::Heal:
+		ui.battleEdit->append(QString::fromStdString(action->getInitiator()->getName()) + "治疗了" + QString::fromStdString(action->getTarget()->getName()) + "恢复了" + QString::number(action->getValue()) + "点生命值");
+		break;
+	}
+}
+
 void GameWindow::displayStatus()
 {
+	ui.battleEdit->clear();											// 清空battleEdit
 	for (int i = 0; i < game->getTeamCount(); i++) {
 		for (auto player : game->getTeams()[i]) {
+			// battleEdit一行显示一个玩家名字 HP 攻 防 GPA
+			ui.battleEdit->append(QString::fromStdString(player->getName()) + " HP: " + QString::number(player->getHp()) + " 攻: " + QString::number(player->getAtk()) + " 防: " + QString::number(player->getDef()) + " GPA: " + QString::number(player->getGPA()));
+
 			QLabel* playerName = new QLabel(QString::fromStdString(player->getName()), this);
 			QProgressBar* healthBar = new QProgressBar(this);
 			healthBar->setRange(0, player->getHpMax());
@@ -77,12 +101,12 @@ void GameWindow::displayStatus()
 
 			ui.statusLayout->addWidget(playerName);
 			ui.statusLayout->addWidget(healthBar);
-			if (!game->isTeamBattle() && player != game->getTeams()[i].back())
-				ui.statusLayout->addItem(new QSpacerItem(0, 20, QSizePolicy::Minimum, QSizePolicy::Expanding)); // 添加占位符以空出一定距离
 		}
 		if (i < game->getTeamCount() - 1)
 			ui.statusLayout->addItem(new QSpacerItem(0, 20, QSizePolicy::Minimum, QSizePolicy::Expanding)); // 添加占位符以空出一定距离
 	}
+	// 显示分割线分隔后面对战信息
+	ui.battleEdit->append("--------------------------------------------------");
 }
 
 void GameWindow::closeEvent(QCloseEvent* event)

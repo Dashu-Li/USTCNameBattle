@@ -16,7 +16,7 @@ private:
 	int miss;           // 闪避率
 	int heal;           // 回复力
 	int exp;			// 经验值
-	int GPA;			// 绩点
+	double GPA;			// 绩点
 
 public:
 	Player(std::string name = "");
@@ -49,16 +49,19 @@ public:
 
 signals:
 	void hpChanged(int newHp);			// 生命值改变信号
+
 };
 
 class Action {
 public:
 	enum ActionType { Attack, Heal, Skill };	// 操作类型，有攻击、防御、技能等，可以添加更多属性
 
-	// 构造函数，返回一个操作对象，包含操作类型、发动者、目标、伤害值、是否暴击、是否闪避等信息
-	Action(ActionType actiontype, Player* initiator, Player* target = nullptr, int damage = 0, bool isCritical = false, bool isMiss = false);
+	// 构造函数，返回一个操作对象，包含操作类型、发动者、目标、数值、是否暴击、是否闪避等信息
+	Action(ActionType actiontype, Player* initiator, Player* target = nullptr, int value = 0, bool isCritical = false, bool isMiss = false);
 	const ActionType& getActionType() const;	// 获取操作类型
-	const int& getDamage() const;				// 获取伤害值
+	const Player* getInitiator() const;			// 获取发动者
+	const Player* getTarget() const;			// 获取目标
+	const int& getValue() const;				// 获取数值
 	const bool& getIsCritical() const;			// 获取是否暴击
 	const bool& getIsMiss() const;				// 获取是否闪避
 
@@ -66,7 +69,7 @@ private:
 	ActionType actiontype;	// 操作类型
 	Player* initiator;		// 发动者
 	Player* target;			// 目标
-	int damage;				// 伤害值
+	int value;				// 数值
 	bool isCritical;		// 是否暴击
 	bool isMiss;			// 是否闪避
 
@@ -78,7 +81,9 @@ struct Weight {             // 行动权重
 	Weight(int a, int d, int h, int he) : attacker(a), defender(d), healer(h), healee(he) {}
 };
 
-class Game {
+class Game : public QObject {
+	Q_OBJECT
+
 private:
 	int teamCount;								// 队伍数量
 	std::vector<std::vector<Player*>> teams;	// 队伍玩家列表
@@ -95,11 +100,12 @@ public:
 	void Regroup();												// 如果玩家未分组，即只有一组，重新分组为一人一组
 
 	// TODO: 定义一个函数，返回一个保存了一局游戏所有操作的vector，每一回合中，按随机顺序遍历所有玩家，随机产生该玩家本回合操作，若攻击则随机选择一个敌方玩家进行攻击
-	Action GenerateAttack();
-	Action GenerateHeal();
+	Action* GenerateAttack();
+	Action* GenerateHeal();
 	void GenerateGame();										// 生成对局
 
-	Action* attack(Player* attacker, Player* defender);			// 攻击
-	Action* heal(Player* healer, Player* target = nullptr);		// 治疗
-	//Action* skill(Player* caster, Player* target = nullptr);	// 技能
+signals:
+	void generateAction(Action*);								// 产生操作信号
+	void gameEnd();												// 游戏结束信号
+
 };

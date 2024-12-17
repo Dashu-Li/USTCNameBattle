@@ -25,7 +25,9 @@ private:
 private slots:
 	void on_battleStartButton_clicked();
 	void on_PlayAgainButton_clicked();
+	void displayAction(Action* action);
 
 signals:
 	void Back();
+
 };
