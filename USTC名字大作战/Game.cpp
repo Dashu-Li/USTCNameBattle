@@ -253,6 +253,33 @@ Action* Game::GenerateLifesteal()
 	return action;
 }
 
+Action* Game::GenerateAscension()
+{
+	// 在存活玩家中随机选一个
+	int choosed = rand() % PlayersAlive();
+	int choosed_i = 0, choosed_j = 0;
+	for (int i = 0; i < getTeamCount(); i++) {
+		for (int j = 0; j < teams[i].size(); j++) {
+			if (teams[i][j]->isDead()) continue;
+			choosed--;
+			if (choosed < 0) { choosed_j = j; break; }
+		}
+		if (choosed < 0) { choosed_i = i; break; }
+	}
+
+	// 将 生命值上限、攻击力、防御力、暴击率、闪避率、回复力 随机小幅度增加
+	teams[choosed_i][choosed_j]->addHpMax(rand() % 32);
+	teams[choosed_i][choosed_j]->addAtk(rand() % 8);
+	teams[choosed_i][choosed_j]->addDef(rand() % 4);
+	teams[choosed_i][choosed_j]->addCrit(rand() % 2);
+	teams[choosed_i][choosed_j]->addMiss(rand() % 2);
+	teams[choosed_i][choosed_j]->addHeal(rand() % 4);
+
+	Action* action = new Action(Action::Ascension, teams[choosed_i][choosed_j]);
+	//emit generateAction(action);
+	return action;
+}
+
 std::vector<Player*> Game::CalculateGPA() {
 	std::vector<Player*> rank;	// 按照结果排名，计算GPA
 	for (int i = 0; i < getTeamCount(); i++)
@@ -282,7 +309,7 @@ void Game::GenerateGame()
 
 	std::vector<Action*> progress;
 	while (TeamsAlive() > 1) {
-		int seed = rand() % 6;
+		int seed = rand() % 8;
 		switch (seed) {
 			case 0:
 			case 1:
@@ -296,6 +323,9 @@ void Game::GenerateGame()
 				break;
 			case 6:
 				progress.push_back(GenerateLifesteal());
+				break;
+			case 7:
+				progress.push_back(GenerateAscension());
 				break;
 		}
 		// 暂停
@@ -386,8 +416,16 @@ int Player::addGPA(int GPA) { this->GPA += GPA; return GPA; }
 
 int Player::addHp(int addhp) { emit hpChanged(hp += std::min(hpmax - hp, std::max(-hp, addhp))); return addhp; }
 
+int Player::addHpMax(int addhpmax) { this->hpmax += addhpmax; return addhpmax; }
+
 int Player::addAtk(int atk) { this->atk += atk; return atk; }
 
 int Player::addDef(int def) { this->def += def; return def; }
+
+int Player::addCrit(int crit) { this->crit += crit; return crit; }
+
+int Player::addMiss(int miss) { this->miss += miss; return miss; }
+
+int Player::addHeal(int heal) { this->heal += heal; return heal; }
 
 int Player::addKillCount() { return ++killCount; }

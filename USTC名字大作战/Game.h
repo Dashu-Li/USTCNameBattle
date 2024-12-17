@@ -49,8 +49,12 @@ public:
 	int addExp(int exp);				// 增加经验值
 	int addGPA(int GPA);				// 增加绩点
 	int addHp(int hp);					// 增加生命值
+	int addHpMax(int addhpmax);			// 增加生命值上限
 	int addAtk(int atk);				// 增加攻击力
 	int addDef(int def);				// 增加防御力
+	int addCrit(int crit);				// 增加暴击率
+	int addMiss(int miss);				// 增加闪避率
+	int addHeal(int heal);				// 增加回复力
 	int addKillCount();					// 击杀数加一
 
 	bool operator<(const Player& other) const {		// 重载<运算符
@@ -115,8 +119,8 @@ public:
 	Action* GenerateAttack();			// 普通攻击
 	Action* GenerateHeal();				// 治疗
 	Action* GenerateLifesteal();		// 吸血，实质是没有暴击的普通攻击，同时让吸血者回复造成伤害一半的血量
-	Action* GenerateAscention();		// 飞升，即所有属性小幅增长
-	std::vector<Player*> CalculateGPA();										// 根据对局表现计算GPA
+	Action* GenerateAscension();		// 飞升，即所有属性小幅增长
+	std::vector<Player*> CalculateGPA();						// 根据对局表现计算GPA
 	void GenerateGame();										// 生成对局
 
 signals:
