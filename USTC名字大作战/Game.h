@@ -53,6 +53,10 @@ public:
 	int addDef(int def);				// 增加防御力
 	int addKillCount();					// 击杀数加一
 
+	bool operator<(const Player& other) const {		// 重载<运算符
+		return (isDead() < other.isDead()) || (isDead() == other.isDead() && getExp() > other.getExp());  // 按照 1.是否存活；2.经验值 升序排列，GPA高的“比较小”，排在最前面
+	}
+
 signals:
 	void hpChanged(int newHp);			// 生命值改变信号
 
@@ -108,6 +112,7 @@ public:
 	// TODO: 定义一个函数，返回一个保存了一局游戏所有操作的vector，每一回合中，按随机顺序遍历所有玩家，随机产生该玩家本回合操作，若攻击则随机选择一个敌方玩家进行攻击
 	Action* GenerateAttack();
 	Action* GenerateHeal();
+	std::vector<Player*> CalculateGPA();										// 根据对局表现计算GPA
 	void GenerateGame();										// 生成对局
 
 signals:

@@ -1,6 +1,8 @@
 ﻿#include <algorithm>
 #include <random>
 #include <ctime>
+#include <chrono>   // 用于时间处理
+#include <thread>   // 用于线程休眠
 #include <vector>
 #include <cmath>
 #include "Game.h"
@@ -62,8 +64,8 @@ Action* Game::GenerateAttack()
 				weight[i][j].defender = std::max(PlayersAlive(), weight[i][j].defender + 1);
 			}
 
-	int total_attacker = 0, total_defender = 0, attacker_choosed = 0, defender_choosed = 0, temp;
-	int attacker_i, attacker_j, defender_i, defender_j;
+	int total_attacker = 0, total_defender = 0, attacker_choosed = 0, defender_choosed = 0, temp = 0;
+	int attacker_i = 0, attacker_j = 0, defender_i = 0, defender_j = 0;
 
 	// 按权重随机产生攻击者
 	for (int i = 0; i < getTeamCount(); i++)
@@ -98,6 +100,10 @@ Action* Game::GenerateAttack()
 		if (temp > defender_choosed) break;
 	}
 
+	// 重置攻击者和防御者的权重
+	weight[attacker_i][attacker_j].attacker = 0;
+	weight[defender_i][defender_j].defender = 0;
+
 	// 计算伤害
 	bool isCritical = rand() % 128 < teams[attacker_i][attacker_j]->getCrit();
 	bool isMiss = rand() % 128 < teams[defender_i][defender_j]->getMiss();
@@ -109,11 +115,14 @@ Action* Game::GenerateAttack()
 		teams[attacker_i][attacker_j]->addKillCount();
 		teams[defender_i][defender_j]->setKilledBy(teams[attacker_i][attacker_j]);
 	}
+
+	// 计算经验
+	teams[attacker_i][attacker_j]->addExp(damage);
+
 	Action* action = new Action(Action::Attack, teams[attacker_i][attacker_j], teams[defender_i][defender_j], damage, isCritical, isMiss);
 	emit generateAction(action);
 	return action;
 }
-
 
 Action* Game::GenerateHeal()
 {
@@ -125,8 +134,8 @@ Action* Game::GenerateHeal()
 				weight[i][j].healee = std::max(PlayersAlive(), weight[i][j].healee + 1);
 			}
 
-	int total_healer = 0, total_healee = 0, healer_choosed = 0, healee_choosed = 0, temp;
-	int healer_i, healer_j, healee_i, healee_j;
+	int total_healer = 0, total_healee = 0, healer_choosed = 0, healee_choosed = 0, temp = 0;
+	int healer_i = 0, healer_j = 0, healee_i = 0, healee_j = 0;
 
 	// 按权重随机产生治疗者
 	for (int i = 0; i < getTeamCount(); i++)
@@ -155,12 +164,36 @@ Action* Game::GenerateHeal()
 			temp += weight[healee_i][j].healee;
 		}
 
+	// 重置治疗者和被治疗者的权重
+	weight[healer_i][healer_j].healer = 0;
+	weight[healee_i][healee_j].healee = 0;
+
 	// 计算回血
 	int heal = std::min(teams[healee_i][healee_j]->getHpMax() - teams[healee_i][healee_j]->getHp(), teams[healer_i][healer_j]->getHeal() + teams[healee_i][healee_j]->getDef());
 	teams[healee_i][healee_j]->addHp(heal);
+
+	// 计算经验
+	teams[healer_i][healer_j]->addExp(heal);
+
 	Action* action = new Action(Action::Heal, teams[healer_i][healer_j], teams[healee_i][healee_j], heal);
 	emit generateAction(action);
 	return action;
+}
+
+std::vector<Player*> Game::CalculateGPA() {
+	std::vector<Player*> rank;	// 按照结果排名，计算GPA
+	for (int i = 0; i < getTeamCount(); i++)
+		for (int j = 0; j < teams[i].size(); j++)
+			rank.push_back(teams[i][j]);
+	sort(rank.begin(), rank.end());
+
+	double gpa = 4.3;
+	for (int i = 0; i < rank.size(); i++) {
+		if (rank[i]->isDead()) gpa -= 0.3;
+		if (gpa - 1.0 < -0.000001) gpa = 0;
+		rank[i]->setGPA(gpa);
+	}
+	return rank;
 }
 
 void Game::GenerateGame()
@@ -176,7 +209,7 @@ void Game::GenerateGame()
 
 	std::vector<Action*> progress;
 	while (TeamsAlive() > 1) {
-		int seed = rand() % 10;
+		int seed = rand() % 6;
 		switch (seed) {
 			case 0:
 			case 1:
@@ -186,12 +219,14 @@ void Game::GenerateGame()
 				break;
 			case 4:
 			case 5:
-			case 6:
-			case 7:
 				progress.push_back(GenerateHeal());
 				break;
 		}
+		// 暂停
+		// std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	}
+
+	std::vector<Player*> rank = CalculateGPA();
 }
 
 Action::Action(ActionType actiontype, Player* initiator, Player* target, int value, bool isCritical, bool isMiss) :
