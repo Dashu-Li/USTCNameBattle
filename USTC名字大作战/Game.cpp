@@ -70,7 +70,7 @@ Action* Game::GenerateAttack()
 		for (int j = 0; j < teams[i].size(); j++)
 			if (!teams[i][j]->isDead() && weight[i][j].attacker > 0)
 				total_attacker += weight[i][j].attacker;
-	attacker_choosed = rand() % total_attacker; temp = 0;                // 将所有人权重相加，随机生成一个数，看他落在哪个人的前缀和之内
+	attacker_choosed = rand() % total_attacker; temp = 0;				// 将所有人权重相加，随机生成一个数，看他落在哪个人的前缀和之内
 	for (int i = 0; i < getTeamCount(); i++) {
 		for (int j = 0; j < teams[i].size(); j++)
 			if (!teams[i][j]->isDead() && weight[i][j].attacker > 0) {
@@ -82,7 +82,7 @@ Action* Game::GenerateAttack()
 
 	// 按权重随机产生防御者
 	for (int i = 0; i < getTeamCount(); i++) {
-		if (i == attacker_i) continue;                        // 避免友伤
+		if (i == attacker_i) continue;									// 避免友伤
 		for (int j = 0; j < teams[i].size(); j++)
 			if (!teams[i][j]->isDead() && weight[i][j].defender > 0)
 				total_defender += weight[i][j].defender;
