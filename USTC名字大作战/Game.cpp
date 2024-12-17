@@ -151,7 +151,7 @@ Action* Game::GenerateHeal()
 	healee_choosed = rand() % total_healee; temp = 0;
 	for (int j = 0; j < teams[healee_i].size(); j++)
 		if (!teams[healee_i][j]->isDead() && weight[healee_i][j].healee > 0) {
-			if (temp <= healee_choosed && temp + weight[healee_i][j].healee > healer_choosed) { healee_j = j; break; }
+			if (temp <= healee_choosed && temp + weight[healee_i][j].healee > healee_choosed) { healee_j = j; break; }
 			temp += weight[healee_i][j].healee;
 		}
 
@@ -178,18 +178,18 @@ void Game::GenerateGame()
 	while (TeamsAlive() > 1) {
 		int seed = rand() % 10;
 		switch (seed) {
-		case 0:
-		case 1:
-		case 2:
-		case 3:
-			progress.push_back(GenerateAttack());
-			break;
-		case 4:
-		case 5:
-		case 6:
-		case 7:
-			progress.push_back(GenerateHeal());
-			break;
+			case 0:
+			case 1:
+			case 2:
+			case 3:
+				progress.push_back(GenerateAttack());
+				break;
+			case 4:
+			case 5:
+			case 6:
+			case 7:
+				progress.push_back(GenerateHeal());
+				break;
 		}
 	}
 }
