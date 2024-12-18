@@ -34,7 +34,7 @@ public:
 	const int& getCrit() const;			// 获取暴击率
 	const int& getMiss() const;			// 获取闪避率
 	const int& getHeal() const;			// 获取回复力
-	const Player* getFiredBy() const;	// 获取是否着火
+	Player* getFiredBy();			// 获取被谁点燃
 	const int& getIsFrozen() const;		// 获取是否冰冻
 	const int& getKillCount() const;	// 获取击杀数
 	const Player* getKilledBy() const;	// 获取被谁杀死
@@ -46,6 +46,8 @@ public:
 	void setCrit(int crit);             // 设置暴击率
 	void setMiss(int miss);             // 设置闪避率
 	void setHeal(int heal);             // 设置回复力
+	void setFiredBy(Player* player);	// 设置被谁点燃
+	void setFrozen(bool yesorno);		// 设置是否被冰冻
 	void setExp(int exp);				// 设置经验值
 	void setGPA(int GPA);				// 设置绩点
 	void setKilledBy(Player* player);	// 设置被谁杀死
@@ -72,7 +74,7 @@ signals:
 
 class Action {
 public:
-	enum ActionType { Attack, Heal, Lifesteal, Ascension };			// 操作类型，有攻击、防御、吸血、飞升等，可以添加更多属性
+	enum ActionType { Attack, Heal, Lifesteal, Ascension, Fire, Freeze, Burn, Unfreeze };			// 操作类型，有攻击、防御、吸血、飞升、点燃、冰冻、燃烧、解冻等，可以添加更多属性
 
 	// 构造函数，返回一个操作对象，包含操作类型、发动者、目标、数值、是否暴击、是否闪避等信息
 	Action(ActionType actiontype, Player* initiator, Player* target = nullptr, int damage = 0, int heal = 0, bool isCritical = false, bool isMiss = false);
@@ -120,14 +122,14 @@ public:
 	void Regroup();												// 如果玩家未分组，即只有一组，重新分组为一人一组
 
 	// TODO: 定义一个函数，返回一个保存了一局游戏所有操作的vector，每一回合中，按随机顺序遍历所有玩家，随机产生该玩家本回合操作，若攻击则随机选择一个敌方玩家进行攻击
-	//void FireJudgement();				// 每回合开始时对所有人的着火状态判断
+	void BurnJudgement(std::vector<Action*> progress);				// 每回合开始时对所有人的着火状态判断
 	//void FrozenJudgement();				// 每回合开始时对所有人的冰冻状态判断
 
 	Action* GenerateAttack();			// 普通攻击
 	Action* GenerateHeal();				// 治疗
 	Action* GenerateLifesteal();		// 吸血，实质是没有暴击的普通攻击，同时让吸血者回复造成伤害一半的血量
 	Action* GenerateAscension();		// 飞升，即所有属性小幅增长
-	//Action* GenerateFire();				// 纵火，不造成伤害，但在接下来几回合会持续燃烧，概率灭火
+	void GenerateFire(std::vector<Action*> progress);				// 纵火，不造成伤害，但在接下来几回合会持续燃烧，概率灭火
 	//Action* GenerateFreeze();			// 冰冻，不造成伤害，使目标接下来几回合无法作为行动的发起者（普攻、治疗、吸血等）
 	std::vector<Player*> CalculateGPA();						// 根据对局表现计算GPA
 	void GenerateGame();										// 生成对局

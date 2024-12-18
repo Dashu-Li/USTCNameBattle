@@ -54,7 +54,30 @@ void Game::Regroup()
 	teams[0].resize(1);
 }
 
-//void Game::FireJudgement()
+void Game::BurnJudgement(std::vector<Action*> progress)
+{
+	for (int i = 0; i < getTeamCount(); i++)
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead() && teams[i][j]->getFiredBy() != nullptr) {		// 如果没有死亡且被人点燃
+				// 计算燃烧伤害
+				int damage = (teams[i][j]->getFiredBy()->getAtk() - teams[i][j]->getDef()) / 3;
+				if (damage < 0) damage = 0;
+
+				// 计算经验
+				teams[i][j]->getFiredBy()->addExp(damage);
+
+				Action* action = new Action(Action::Burn, teams[i][j], nullptr, damage);
+				progress.push_back(action);
+				// 在这里添加受到燃烧伤害信号
+				
+				// 有概率解除燃烧
+				if (rand() % 4 == 0) {					// 每回合有 1/4 概率解除燃烧（可算出燃烧的回合数的期望是 4）
+					teams[i][j]->setFiredBy(nullptr); 
+					// 在这里添加解除燃烧信号
+					break;
+				}
+			}
+}
 
 Action* Game::GenerateAttack()
 {
@@ -254,7 +277,7 @@ Action* Game::GenerateLifesteal()
 	teams[attacker_i][attacker_j]->addExp(damage + heal);
 
 	Action* action = new Action(Action::Lifesteal, teams[attacker_i][attacker_j], teams[defender_i][defender_j], damage, heal, 0, isMiss);
-	//emit generateAction(action);
+	// 添加吸血信号
 	return action;
 }
 
@@ -265,7 +288,7 @@ Action* Game::GenerateAscension()
 	int choosed_i = 0, choosed_j = 0;
 	for (int i = 0; i < getTeamCount(); i++) {
 		for (int j = 0; j < teams[i].size(); j++) {
-			if (teams[i][j]->isDead()) continue;
+			if (teams[i][j]->isDead() || teams[i][j]->getIsFrozen()) continue;		// 选择没有死亡且没被冰冻的人
 			choosed--;
 			if (choosed < 0) { choosed_j = j; break; }
 		}
@@ -281,8 +304,75 @@ Action* Game::GenerateAscension()
 	teams[choosed_i][choosed_j]->addHeal(rand() % 4);
 
 	Action* action = new Action(Action::Ascension, teams[choosed_i][choosed_j]);
-	//emit generateAction(action);
+	// 添加飞升信号
 	return action;
+}
+
+void Game::GenerateFire(std::vector<Action*> progress)
+{
+	// 刷新权重
+	for (int i = 0; i < getTeamCount(); i++)
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead()) {
+				if (!teams[i][j]->getIsFrozen())							// 冰冻时不会刷新纵火权重
+					weight[i][j].attacker = std::max(PlayersAlive(), weight[i][j].attacker + 1);
+				weight[i][j].defender = std::max(PlayersAlive(), weight[i][j].defender + 1);
+			}
+
+	int total_attacker = 0, total_defender = 0, attacker_choosed = 0, defender_choosed = 0, temp = 0;
+	int attacker_i = 0, attacker_j = 0, defender_i = 0, defender_j = 0;
+
+	// 按权重随机产生纵火者
+	for (int i = 0; i < getTeamCount(); i++)
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead() && weight[i][j].attacker > 0 && !teams[i][j]->getIsFrozen())
+				total_attacker += weight[i][j].attacker;
+	attacker_choosed = rand() % total_attacker; temp = 0;
+	for (int i = 0; i < getTeamCount(); i++) {
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead() && weight[i][j].attacker > 0 && !teams[i][j]->getIsFrozen()) {			// 要求纵火者必须：没有死亡；有攻击权重；没有被冰冻
+				if (temp <= attacker_choosed && temp + weight[i][j].attacker > attacker_choosed) { temp += weight[i][j].attacker; attacker_i = i; attacker_j = j; break; }
+				temp += weight[i][j].attacker;
+			}
+		if (temp > attacker_choosed) break;
+	}
+
+	// 按权重随机产生防御者
+	for (int i = 0; i < getTeamCount(); i++) {
+		if (i == attacker_i) continue;									// 避免友伤
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead() && weight[i][j].defender > 0)
+				total_defender += weight[i][j].defender;
+	}
+	defender_choosed = rand() % total_defender; temp = 0;
+	for (int i = 0; i < getTeamCount(); i++) {
+		if (i == attacker_i) continue;
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead() && weight[i][j].defender > 0) {											// 要求防御者必须：没有死亡；有防御权重
+				if (temp <= defender_choosed && temp + weight[i][j].defender > defender_choosed) { temp += weight[i][j].defender; defender_i = i; defender_j = j; break; }
+				temp += weight[i][j].defender;
+			}
+		if (temp > defender_choosed) break;
+	}
+
+	// 重置攻击者和防御者的权重
+	weight[attacker_i][attacker_j].attacker = 0;
+	weight[defender_i][defender_j].defender = 0;
+
+	// 计算是否闪避
+	bool isMiss = rand() % 128 < teams[defender_i][defender_j]->getMiss();
+	if (!isMiss) teams[defender_i][defender_j]->setFiredBy(teams[attacker_i][attacker_j]);
+	Action* action = new Action(Action::Fire, teams[attacker_i][attacker_j], teams[defender_i][defender_j], 0, 0, 0, isMiss);
+	progress.push_back(action);
+	// 添加点燃信号
+
+	// 如果之前被冰冻，点燃将会解冻
+	if (!isMiss && teams[defender_i][defender_j]->getIsFrozen()) {
+		teams[defender_i][defender_j]->setFrozen(0);
+		Action* action = new Action(Action::Unfreeze, teams[defender_i][defender_j]);
+		progress.push_back(action);
+		// 添加解冻信号
+	}
 }
 
 std::vector<Player*> Game::CalculateGPA() {
@@ -292,6 +382,7 @@ std::vector<Player*> Game::CalculateGPA() {
 			rank.push_back(teams[i][j]);
 	sort(rank.begin(), rank.end());
 
+	// GPA评分细则：所有存活者获得 4.3，后续依次递减至 1，每次递减0.3，最后全赋值为 0。暂不考虑exp并列情况 
 	double gpa = 4.3;
 	for (int i = 0; i < rank.size(); i++) {
 		if (rank[i]->isDead()) gpa -= 0.3;
@@ -315,7 +406,7 @@ void Game::GenerateGame()
 	std::vector<Action*> progress;
 	while (TeamsAlive() > 1) {
 		int seed = rand() % 10;
-		//FireJudgement();
+		BurnJudgement(progress);
 		//FrozenJudgement();
 		switch (seed) {
 			case 0:
@@ -335,7 +426,7 @@ void Game::GenerateGame()
 				progress.push_back(GenerateAscension());
 				break;
 			case 8:
-				//progress.push_back(GenerateFire());
+				GenerateFire(progress);
 				break;
 			case 9:
 				//progress.push_back(GenerateFreeze());
@@ -401,7 +492,7 @@ const int& Player::getMiss() const { return miss; }
 
 const int& Player::getHeal() const { return heal; }
 
-const Player* Player::getFiredBy() const { return firedBy; }
+Player* Player::getFiredBy() { return firedBy; }
 
 const int& Player::getIsFrozen() const { return isFrozen; }
 
@@ -422,6 +513,10 @@ void Player::setCrit(int crit) { this->crit = crit; }
 void Player::setMiss(int miss) { this->miss = miss; }
 
 void Player::setHeal(int heal) { this->heal = heal; }
+
+void Player::setFiredBy(Player* player) { this->firedBy = player; }
+
+void Player::setFrozen(bool yesorno) { this->isFrozen = yesorno; }
 
 void Player::setExp(int exp) { this->exp = exp; }
 
