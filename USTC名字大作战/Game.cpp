@@ -60,7 +60,8 @@ Action* Game::GenerateAttack()
 	for (int i = 0; i < getTeamCount(); i++)
 		for (int j = 0; j < teams[i].size(); j++)
 			if (!teams[i][j]->isDead()) {
-				weight[i][j].attacker = std::max(PlayersAlive(), weight[i][j].attacker + 1);
+				if(!teams[i][j]->getIsFrozen())							// 冰冻时不会刷新攻击权重
+					weight[i][j].attacker = std::max(PlayersAlive(), weight[i][j].attacker + 1);
 				weight[i][j].defender = std::max(PlayersAlive(), weight[i][j].defender + 1);
 			}
 
@@ -70,12 +71,12 @@ Action* Game::GenerateAttack()
 	// 按权重随机产生攻击者
 	for (int i = 0; i < getTeamCount(); i++)
 		for (int j = 0; j < teams[i].size(); j++)
-			if (!teams[i][j]->isDead() && weight[i][j].attacker > 0)
+			if (!teams[i][j]->isDead() && weight[i][j].attacker > 0 && !teams[i][j]->getIsFrozen())
 				total_attacker += weight[i][j].attacker;
 	attacker_choosed = rand() % total_attacker; temp = 0;				// 将所有人权重相加，随机生成一个数，看他落在哪个人的前缀和之内
 	for (int i = 0; i < getTeamCount(); i++) {
 		for (int j = 0; j < teams[i].size(); j++)
-			if (!teams[i][j]->isDead() && weight[i][j].attacker > 0) {
+			if (!teams[i][j]->isDead() && weight[i][j].attacker > 0 && !teams[i][j]->getIsFrozen()) {			// 要求攻击者必须：没有死亡；有攻击权重；没有被冰冻
 				if (temp <= attacker_choosed && temp + weight[i][j].attacker > attacker_choosed) { temp += weight[i][j].attacker; attacker_i = i; attacker_j = j; break; }
 				temp += weight[i][j].attacker;
 			}
@@ -93,7 +94,7 @@ Action* Game::GenerateAttack()
 	for (int i = 0; i < getTeamCount(); i++) {
 		if (i == attacker_i) continue;
 		for (int j = 0; j < teams[i].size(); j++)
-			if (!teams[i][j]->isDead() && weight[i][j].defender > 0) {
+			if (!teams[i][j]->isDead() && weight[i][j].defender > 0) {											// 要求防御者必须：没有死亡；有防御权重
 				if (temp <= defender_choosed && temp + weight[i][j].defender > defender_choosed) { temp += weight[i][j].defender; defender_i = i; defender_j = j; break; }
 				temp += weight[i][j].defender;
 			}
@@ -130,7 +131,8 @@ Action* Game::GenerateHeal()
 	for (int i = 0; i < getTeamCount(); i++)
 		for (int j = 0; j < teams[i].size(); j++)
 			if (!teams[i][j]->isDead()) {
-				weight[i][j].healer = std::max(PlayersAlive(), weight[i][j].healer + 1);
+				if (!teams[i][j]->getIsFrozen())							// 冰冻时不会刷新治疗权重
+					weight[i][j].healer = std::max(PlayersAlive(), weight[i][j].healer + 1);
 				weight[i][j].healee = std::max(PlayersAlive(), weight[i][j].healee + 1);
 			}
 
@@ -140,12 +142,12 @@ Action* Game::GenerateHeal()
 	// 按权重随机产生治疗者
 	for (int i = 0; i < getTeamCount(); i++)
 		for (int j = 0; j < teams[i].size(); j++)
-			if (!teams[i][j]->isDead() && weight[i][j].healer > 0)
+			if (!teams[i][j]->isDead() && weight[i][j].healer > 0 && !teams[i][j]->getIsFrozen())
 				total_healer += weight[i][j].healer;
 	healer_choosed = rand() % total_healer; temp = 0;
 	for (int i = 0; i < getTeamCount(); i++) {
 		for (int j = 0; j < teams[i].size(); j++)
-			if (!teams[i][j]->isDead() && weight[i][j].healer > 0) {
+			if (!teams[i][j]->isDead() && weight[i][j].healer > 0 && !teams[i][j]->getIsFrozen()) {				// 要求治疗者必须：没有死亡；有治疗权重；没有被冰冻
 				if (temp <= healer_choosed && temp + weight[i][j].healer > healer_choosed) { temp += weight[i][j].healer; healer_i = i; healer_j = j; break; }
 				temp += weight[i][j].healer;
 			}
@@ -159,7 +161,7 @@ Action* Game::GenerateHeal()
 			total_healee += weight[healee_i][j].healee;
 	healee_choosed = rand() % total_healee; temp = 0;
 	for (int j = 0; j < teams[healee_i].size(); j++)
-		if (!teams[healee_i][j]->isDead() && weight[healee_i][j].healee > 0) {
+		if (!teams[healee_i][j]->isDead() && weight[healee_i][j].healee > 0) {									// 要求被治疗者必须：没有死亡；有被治疗权重
 			if (temp <= healee_choosed && temp + weight[healee_i][j].healee > healee_choosed) { healee_j = j; break; }
 			temp += weight[healee_i][j].healee;
 		}
@@ -186,29 +188,30 @@ Action* Game::GenerateLifesteal()
 	for (int i = 0; i < getTeamCount(); i++)
 		for (int j = 0; j < teams[i].size(); j++)
 			if (!teams[i][j]->isDead()) {
-				weight[i][j].attacker = std::max(PlayersAlive(), weight[i][j].attacker + 1);
+				if (!teams[i][j]->getIsFrozen())							// 冰冻时不会刷新吸血权重（即攻击权重）
+					weight[i][j].attacker = std::max(PlayersAlive(), weight[i][j].attacker + 1);
 				weight[i][j].defender = std::max(PlayersAlive(), weight[i][j].defender + 1);
 			}
 
 	int total_attacker = 0, total_defender = 0, attacker_choosed = 0, defender_choosed = 0, temp = 0;
 	int attacker_i = 0, attacker_j = 0, defender_i = 0, defender_j = 0;
 
-	// 按权重随机产生攻击者
+	// 按权重随机产生吸血者
 	for (int i = 0; i < getTeamCount(); i++)
 		for (int j = 0; j < teams[i].size(); j++)
-			if (!teams[i][j]->isDead() && weight[i][j].attacker > 0)
+			if (!teams[i][j]->isDead() && weight[i][j].attacker > 0 && !teams[i][j]->getIsFrozen())
 				total_attacker += weight[i][j].attacker;
 	attacker_choosed = rand() % total_attacker; temp = 0;
 	for (int i = 0; i < getTeamCount(); i++) {
 		for (int j = 0; j < teams[i].size(); j++)
-			if (!teams[i][j]->isDead() && weight[i][j].attacker > 0) {
+			if (!teams[i][j]->isDead() && weight[i][j].attacker > 0 && !teams[i][j]->getIsFrozen()) {			// 要求吸血者必须：没有死亡；有吸血权重；没有被冰冻
 				if (temp <= attacker_choosed && temp + weight[i][j].attacker > attacker_choosed) { temp += weight[i][j].attacker; attacker_i = i; attacker_j = j; break; }
 				temp += weight[i][j].attacker;
 			}
 		if (temp > attacker_choosed) break;
 	}
 
-	// 按权重随机产生防御者
+	// 按权重随机产生被吸血者
 	for (int i = 0; i < getTeamCount(); i++) {
 		if (i == attacker_i) continue;									// 避免友伤
 		for (int j = 0; j < teams[i].size(); j++)
@@ -219,14 +222,14 @@ Action* Game::GenerateLifesteal()
 	for (int i = 0; i < getTeamCount(); i++) {
 		if (i == attacker_i) continue;
 		for (int j = 0; j < teams[i].size(); j++)
-			if (!teams[i][j]->isDead() && weight[i][j].defender > 0) {
+			if (!teams[i][j]->isDead() && weight[i][j].defender > 0) {											// 要求被吸血者必须：没有死亡；有被吸血权重
 				if (temp <= defender_choosed && temp + weight[i][j].defender > defender_choosed) { temp += weight[i][j].defender; defender_i = i; defender_j = j; break; }
 				temp += weight[i][j].defender;
 			}
 		if (temp > defender_choosed) break;
 	}
 
-	// 重置攻击者和防御者的权重
+	// 重置吸血者和被吸血者的权重
 	weight[attacker_i][attacker_j].attacker = 0;
 	weight[defender_i][defender_j].defender = 0;
 
@@ -364,6 +367,7 @@ Player::Player(std::string name) :
 	crit = hash(name + "crit") % 8 + 8;				// 暴击率: ( 8 - 15 ) / 128	即约为 1/16 - 1/8
 	miss = hash(name + "miss") % 8 + 8;				// 闪避率: ( 8 - 15 ) / 128	即约为 1/16 - 1/8
 	heal = hash(name + "heal") % 16 + 16;			// 回复力: 16 - 31
+	isFired = isFrozen = 0;
 }
 
 const std::string& Player::getName() const { return name; }
@@ -385,6 +389,10 @@ const int& Player::getCrit() const { return crit; }
 const int& Player::getMiss() const { return miss; }
 
 const int& Player::getHeal() const { return heal; }
+
+const int& Player::getIsFired() const { return isFired; }
+
+const int& Player::getIsFrozen() const { return isFrozen; }
 
 const int& Player::getKillCount() const { return killCount; }
 

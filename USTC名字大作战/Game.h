@@ -15,6 +15,8 @@ private:
 	int crit;           // 暴击率
 	int miss;           // 闪避率
 	int heal;           // 回复力
+	bool isFired;		// 是否着火
+	bool isFrozen;		// 是否被冰冻
 	int exp;			// 经验值
 	double GPA;			// 绩点
 	int killCount;		// 击杀数
@@ -32,6 +34,8 @@ public:
 	const int& getCrit() const;			// 获取暴击率
 	const int& getMiss() const;			// 获取闪避率
 	const int& getHeal() const;			// 获取回复力
+	const int& getIsFired() const;		// 获取是否着火
+	const int& getIsFrozen() const;		// 获取是否冰冻
 	const int& getKillCount() const;	// 获取击杀数
 	const Player* getKilledBy() const;	// 获取被谁杀死
 
