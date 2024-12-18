@@ -73,8 +73,23 @@ void Game::BurnJudgement(std::vector<Action*> progress)
 				// 有概率解除燃烧
 				if (rand() % 4 == 0) {					// 每回合有 1/4 概率解除燃烧（可算出燃烧的回合数的期望是 4）
 					teams[i][j]->setFiredBy(nullptr); 
+					Action* action = new Action(Action::Extinguish, teams[i][j]);
+					progress.push_back(action);
 					// 在这里添加解除燃烧信号
-					break;
+				}
+			}
+}
+
+void Game::FrozenJudgement(std::vector<Action*> progress)
+{
+	for (int i = 0; i < getTeamCount(); i++)
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead() && teams[i][j]->getIsFrozen()) {					// 如果没有死亡且被冰冻
+				// 有概率解除冰冻
+				if (rand() % 5 == 0) {					// 每回合有 1/5 概率解除燃烧（可算出燃烧的回合数的期望是 5）
+					teams[i][j]->setFrozen(0);
+					Action* action = new Action(Action::Unfreeze, teams[i][j]);
+					// 在这里添加解除冰冻信号
 				}
 			}
 }
@@ -337,7 +352,7 @@ void Game::GenerateFire(std::vector<Action*> progress)
 		if (temp > attacker_choosed) break;
 	}
 
-	// 按权重随机产生防御者
+	// 按权重随机产生被纵火者
 	for (int i = 0; i < getTeamCount(); i++) {
 		if (i == attacker_i) continue;									// 避免友伤
 		for (int j = 0; j < teams[i].size(); j++)
@@ -348,14 +363,14 @@ void Game::GenerateFire(std::vector<Action*> progress)
 	for (int i = 0; i < getTeamCount(); i++) {
 		if (i == attacker_i) continue;
 		for (int j = 0; j < teams[i].size(); j++)
-			if (!teams[i][j]->isDead() && weight[i][j].defender > 0) {											// 要求防御者必须：没有死亡；有防御权重
+			if (!teams[i][j]->isDead() && weight[i][j].defender > 0) {											// 要求被纵火者必须：没有死亡；有防御权重
 				if (temp <= defender_choosed && temp + weight[i][j].defender > defender_choosed) { temp += weight[i][j].defender; defender_i = i; defender_j = j; break; }
 				temp += weight[i][j].defender;
 			}
 		if (temp > defender_choosed) break;
 	}
 
-	// 重置攻击者和防御者的权重
+	// 重置纵火者和被纵火者的权重
 	weight[attacker_i][attacker_j].attacker = 0;
 	weight[defender_i][defender_j].defender = 0;
 
@@ -372,6 +387,73 @@ void Game::GenerateFire(std::vector<Action*> progress)
 		Action* action = new Action(Action::Unfreeze, teams[defender_i][defender_j]);
 		progress.push_back(action);
 		// 添加解冻信号
+	}
+}
+
+void Game::GenerateFreeze(std::vector<Action*> progress)
+{
+	// 刷新权重
+	for (int i = 0; i < getTeamCount(); i++)
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead()) {
+				if (!teams[i][j]->getIsFrozen())							// 冰冻时不会刷新冰冻权重
+					weight[i][j].attacker = std::max(PlayersAlive(), weight[i][j].attacker + 1);
+				weight[i][j].defender = std::max(PlayersAlive(), weight[i][j].defender + 1);
+			}
+
+	int total_attacker = 0, total_defender = 0, attacker_choosed = 0, defender_choosed = 0, temp = 0;
+	int attacker_i = 0, attacker_j = 0, defender_i = 0, defender_j = 0;
+
+	// 按权重随机产生冰冻者
+	for (int i = 0; i < getTeamCount(); i++)
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead() && weight[i][j].attacker > 0 && !teams[i][j]->getIsFrozen())
+				total_attacker += weight[i][j].attacker;
+	attacker_choosed = rand() % total_attacker; temp = 0;
+	for (int i = 0; i < getTeamCount(); i++) {
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead() && weight[i][j].attacker > 0 && !teams[i][j]->getIsFrozen()) {			// 要求冰冻者必须：没有死亡；有攻击权重；没有被冰冻
+				if (temp <= attacker_choosed && temp + weight[i][j].attacker > attacker_choosed) { temp += weight[i][j].attacker; attacker_i = i; attacker_j = j; break; }
+				temp += weight[i][j].attacker;
+			}
+		if (temp > attacker_choosed) break;
+	}
+
+	// 按权重随机产生被冰冻者
+	for (int i = 0; i < getTeamCount(); i++) {
+		if (i == attacker_i) continue;									// 避免友伤
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead() && weight[i][j].defender > 0)
+				total_defender += weight[i][j].defender;
+	}
+	defender_choosed = rand() % total_defender; temp = 0;
+	for (int i = 0; i < getTeamCount(); i++) {
+		if (i == attacker_i) continue;
+		for (int j = 0; j < teams[i].size(); j++)
+			if (!teams[i][j]->isDead() && weight[i][j].defender > 0) {											// 要求被冰冻者必须：没有死亡；有防御权重
+				if (temp <= defender_choosed && temp + weight[i][j].defender > defender_choosed) { temp += weight[i][j].defender; defender_i = i; defender_j = j; break; }
+				temp += weight[i][j].defender;
+			}
+		if (temp > defender_choosed) break;
+	}
+
+	// 重置冰冻者和被冰冻者的权重
+	weight[attacker_i][attacker_j].attacker = 0;
+	weight[defender_i][defender_j].defender = 0;
+
+	// 计算是否闪避
+	bool isMiss = rand() % 128 < teams[defender_i][defender_j]->getMiss();
+	if (!isMiss) teams[defender_i][defender_j]->setFrozen(1);
+	Action* action = new Action(Action::Freeze, teams[attacker_i][attacker_j], teams[defender_i][defender_j], 0, 0, 0, isMiss);
+	progress.push_back(action);
+	// 添加冰冻信号
+
+	// 如果之前被点燃，冰冻将会灭火
+	if (!isMiss && teams[defender_i][defender_j]->getFiredBy() != nullptr) {
+		teams[defender_i][defender_j]->setFiredBy(nullptr);
+		Action* action = new Action(Action::Extinguish, teams[defender_i][defender_j]);
+		progress.push_back(action);
+		// 添加灭火信号
 	}
 }
 
@@ -407,7 +489,7 @@ void Game::GenerateGame()
 	while (TeamsAlive() > 1) {
 		int seed = rand() % 10;
 		BurnJudgement(progress);
-		//FrozenJudgement();
+		FrozenJudgement(progress);
 		switch (seed) {
 			case 0:
 			case 1:
@@ -429,7 +511,7 @@ void Game::GenerateGame()
 				GenerateFire(progress);
 				break;
 			case 9:
-				//progress.push_back(GenerateFreeze());
+				GenerateFreeze(progress);
 				break;
 		}
 		// 暂停
