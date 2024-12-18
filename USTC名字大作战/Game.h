@@ -15,7 +15,7 @@ private:
 	int crit;           // 暴击率
 	int miss;           // 闪避率
 	int heal;           // 回复力
-	bool isFired;		// 是否着火
+	Player* firedBy;	// 被谁点燃
 	bool isFrozen;		// 是否被冰冻
 	int exp;			// 经验值
 	double GPA;			// 绩点
@@ -34,7 +34,7 @@ public:
 	const int& getCrit() const;			// 获取暴击率
 	const int& getMiss() const;			// 获取闪避率
 	const int& getHeal() const;			// 获取回复力
-	const int& getIsFired() const;		// 获取是否着火
+	const Player* getFiredBy() const;	// 获取是否着火
 	const int& getIsFrozen() const;		// 获取是否冰冻
 	const int& getKillCount() const;	// 获取击杀数
 	const Player* getKilledBy() const;	// 获取被谁杀死
@@ -120,10 +120,15 @@ public:
 	void Regroup();												// 如果玩家未分组，即只有一组，重新分组为一人一组
 
 	// TODO: 定义一个函数，返回一个保存了一局游戏所有操作的vector，每一回合中，按随机顺序遍历所有玩家，随机产生该玩家本回合操作，若攻击则随机选择一个敌方玩家进行攻击
+	//void FireJudgement();				// 每回合开始时对所有人的着火状态判断
+	//void FrozenJudgement();				// 每回合开始时对所有人的冰冻状态判断
+
 	Action* GenerateAttack();			// 普通攻击
 	Action* GenerateHeal();				// 治疗
 	Action* GenerateLifesteal();		// 吸血，实质是没有暴击的普通攻击，同时让吸血者回复造成伤害一半的血量
 	Action* GenerateAscension();		// 飞升，即所有属性小幅增长
+	//Action* GenerateFire();				// 纵火，不造成伤害，但在接下来几回合会持续燃烧，概率灭火
+	//Action* GenerateFreeze();			// 冰冻，不造成伤害，使目标接下来几回合无法作为行动的发起者（普攻、治疗、吸血等）
 	std::vector<Player*> CalculateGPA();						// 根据对局表现计算GPA
 	void GenerateGame();										// 生成对局
 

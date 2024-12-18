@@ -54,6 +54,8 @@ void Game::Regroup()
 	teams[0].resize(1);
 }
 
+//void Game::FireJudgement()
+
 Action* Game::GenerateAttack()
 {
 	// 刷新权重
@@ -312,7 +314,9 @@ void Game::GenerateGame()
 
 	std::vector<Action*> progress;
 	while (TeamsAlive() > 1) {
-		int seed = rand() % 8;
+		int seed = rand() % 10;
+		//FireJudgement();
+		//FrozenJudgement();
 		switch (seed) {
 			case 0:
 			case 1:
@@ -329,6 +333,12 @@ void Game::GenerateGame()
 				break;
 			case 7:
 				progress.push_back(GenerateAscension());
+				break;
+			case 8:
+				//progress.push_back(GenerateFire());
+				break;
+			case 9:
+				//progress.push_back(GenerateFreeze());
 				break;
 		}
 		// 暂停
@@ -367,7 +377,8 @@ Player::Player(std::string name) :
 	crit = hash(name + "crit") % 8 + 8;				// 暴击率: ( 8 - 15 ) / 128	即约为 1/16 - 1/8
 	miss = hash(name + "miss") % 8 + 8;				// 闪避率: ( 8 - 15 ) / 128	即约为 1/16 - 1/8
 	heal = hash(name + "heal") % 16 + 16;			// 回复力: 16 - 31
-	isFired = isFrozen = 0;
+	firedBy = nullptr;
+	isFrozen = 0;
 }
 
 const std::string& Player::getName() const { return name; }
@@ -390,7 +401,7 @@ const int& Player::getMiss() const { return miss; }
 
 const int& Player::getHeal() const { return heal; }
 
-const int& Player::getIsFired() const { return isFired; }
+const Player* Player::getFiredBy() const { return firedBy; }
 
 const int& Player::getIsFrozen() const { return isFrozen; }
 
