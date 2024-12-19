@@ -68,6 +68,7 @@ void GameWindow::on_PlayAgainButton_clicked()
 	ui.battleEdit->setReadOnly(false);								// 设置battleEdit可写
 	ui.battleStartButton->setEnabled(true);							// 启用开始对战按钮
 	ui.PlayAgainButton->setEnabled(false);							// 禁用再玩一局按钮
+	sleepTime = 600;												// 设置间隔时间为600ms
 }
 
 void GameWindow::displayAction(Action* action)
@@ -133,11 +134,12 @@ void GameWindow::GameEnd(std::vector<Player*> rank)
 	QString html;
 	// 表格宽度设为填充文本框宽度
 	html.append("<table border='1' style='width:100%; text-align:center;'>");
-	html.append("<tr><th>排名</th><th>名字</th><th>GPA</th><th>击杀数</th><th>致命一击</th></tr>");
+	html.append("<tr><th>排名</th><th>名字</th><th>得分</th><th>GPA</th><th>击杀数</th><th>致命一击</th></tr>");
 	for (int i = 0; i < static_cast<int>(rank.size()); i++) {
 		html.append("<tr>");
 		html.append("<td>" + QString::number(i + 1) + "</td>");
 		html.append("<td>" + QString::fromStdString(rank[i]->getName()) + "</td>");
+		html.append("<td>" + QString::number(rank[i]->getExp()) + "</td>");
 		html.append("<td>" + QString::number(rank[i]->getGPA()) + "</td>");
 		html.append("<td>" + QString::number(rank[i]->getKillCount()) + "</td>");
 		html.append("<td>" + (rank[i]->getKilledBy() ? QString::fromStdString(rank[i]->getKilledBy()->getName()) : "") + "</td>");
@@ -182,7 +184,7 @@ void GameWindow::displayStatus()
 
 void GameWindow::on_fastButton_clicked()
 {
-	sleepTime = 100;	// 设置间隔时间为100ms
+	sleepTime = 100;						// 设置间隔时间为100ms
 }
 
 void GameWindow::closeEvent(QCloseEvent* event)
