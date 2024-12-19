@@ -30,7 +30,7 @@ public:
 	const int& getHp() const;			// 获取生命值
 	const int& getAtk() const;			// 获取攻击力
 	const int& getDef() const;			// 获取防御力
-	const int& getGPA() const;			// 获取绩点
+	const double& getGPA() const;		// 获取绩点
 	const int& getExp() const;			// 获取经验值
 	const int& getCrit() const;			// 获取暴击率
 	const int& getMiss() const;			// 获取闪避率
@@ -50,7 +50,7 @@ public:
 	void setFiredBy(Player* player);	// 设置被谁点燃
 	void setFrozen(bool yesorno);		// 设置是否被冰冻
 	void setExp(int exp);				// 设置经验值
-	void setGPA(int GPA);				// 设置绩点
+	void setGPA(double GPA);				// 设置绩点
 	void setKilledBy(Player* player);	// 设置被谁杀死
 
 	int addExp(int exp);				// 增加经验值

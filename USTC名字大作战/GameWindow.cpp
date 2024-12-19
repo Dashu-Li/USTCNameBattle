@@ -3,6 +3,8 @@
 #include <QRegularExpression>
 #include <QLabel>
 #include <QThread>
+#include <QTableWidget>
+#include <QHeaderView>
 
 GameWindow::GameWindow(QWidget* parent)
 	: QMainWindow(parent), game(nullptr)
@@ -91,7 +93,7 @@ void GameWindow::displayAction(Action* action)
 		ui.battleEdit->append(QString::fromStdString(action->getInitiator()->getName()) + " 发动<font color='blueviolet'>吸血</font>，" + QString::fromStdString(action->getTarget()->getName()) + " 受到" + "<font color='red'>" + QString::number(action->getDamage()) + "</font>" + "点伤害");
 		if (action->getTarget()->isDead())
 			ui.battleEdit->append("    " + QString::fromStdString(action->getTarget()->getName()) + " 被击倒了");
-		ui.battleEdit->append("    " + QString::fromStdString(action->getInitiator()->getName()) + " 恢复了" + "<font color='green'>" + QString::number(action->getHeal()) + "</font>" + "点生命值");
+		ui.battleEdit->append("&nbsp;&nbsp;&nbsp;&nbsp;" + QString::fromStdString(action->getInitiator()->getName()) + " 恢复了" + "<font color='green'>" + QString::number(action->getHeal()) + "</font>" + "点生命值");
 		break;
 	case Action::Ascension:
 		// 显示发动飞升，紧接着显示发动者攻击力提升
@@ -109,13 +111,13 @@ void GameWindow::displayAction(Action* action)
 	case Action::Burn:
 		// 显示发动燃烧，紧接着显示目标受到伤害值，用红色显示数字
 		// 若目标死亡则显示被击倒了
-		ui.battleEdit->append(QString::fromStdString(action->getInitiator()->getName()) + " <font color='blueviolet'>燃烧</font>了 " + QString::fromStdString(action->getTarget()->getName()) + " 受到" + "<font color='red'>" + QString::number(action->getDamage()) + "</font>" + "点伤害");
-		if (action->getTarget()->isDead())
-			ui.battleEdit->append("    " + QString::fromStdString(action->getTarget()->getName()) + " 被击倒了");
+		ui.battleEdit->append(QString::fromStdString(action->getInitiator()->getName()) + " <font color='red'>燃烧</font>受到" + "<font color='red'>" + QString::number(action->getDamage()) + "</font>" + "点伤害");
+		if (action->getInitiator()->isDead())
+			ui.battleEdit->append("    " + QString::fromStdString(action->getInitiator()->getName()) + " 被击倒了");
 		break;
 	case Action::Extinguish:
 		// 显示发动熄灭，紧接着显示目标熄灭燃烧
-		ui.battleEdit->append(QString::fromStdString(action->getInitiator()->getName()) + " 的燃烧<font color='blueviolet'>熄灭</font>了");
+		ui.battleEdit->append(QString::fromStdString(action->getInitiator()->getName()) + " 的燃烧<font color='blue'>熄灭</font>了");
 		break;
 	case Action::Unfreeze:
 		// 显示发动解冻，紧接着显示目标解冻
@@ -128,15 +130,22 @@ void GameWindow::displayAction(Action* action)
 
 void GameWindow::GameEnd(std::vector<Player*> rank)
 {
-	ui.battleEdit->append("------------------------------------------------------------");
-	ui.battleEdit->append("游戏结束");
-	ui.battleEdit->append("------------------------------------------------------------");
-	for (int i = 0; i < rank.size(); i++)
-		// 显示排名
-		ui.battleEdit->append("第" + QString::number(i + 1) + "名: " + QString::fromStdString(rank[i]->getName()) + " GPA: " + QString::number(rank[i]->getGPA()));
-	ui.battleEdit->append("------------------------------------------------------------");
-	ui.battleEdit->append("游戏结束");
-	ui.battleEdit->append("------------------------------------------------------------");
+	QString html;
+	// 表格宽度设为填充文本框宽度
+	html.append("<table border='1' style='width:100%; text-align:center;'>");
+	html.append("<tr><th>排名</th><th>名字</th><th>GPA</th><th>击杀数</th><th>致命一击</th></tr>");
+	for (int i = 0; i < static_cast<int>(rank.size()); i++) {
+		html.append("<tr>");
+		html.append("<td>" + QString::number(i + 1) + "</td>");
+		html.append("<td>" + QString::fromStdString(rank[i]->getName()) + "</td>");
+		html.append("<td>" + QString::number(rank[i]->getGPA()) + "</td>");
+		html.append("<td>" + QString::number(rank[i]->getKillCount()) + "</td>");
+		html.append("<td>" + (rank[i]->getKilledBy() ? QString::fromStdString(rank[i]->getKilledBy()->getName()) : "") + "</td>");
+		html.append("</tr>");
+	}
+	html.append("</table>");
+	// 将表格添加到battleEdit末尾
+	ui.battleEdit->append(html);
 }
 
 void GameWindow::displayStatus()

@@ -563,7 +563,7 @@ const int& Player::getAtk() const { return atk; }
 
 const int& Player::getDef() const { return def; }
 
-const int& Player::getGPA() const { return GPA; }
+const double& Player::getGPA() const { return GPA; }
 
 const int& Player::getExp() const { return exp; }
 
@@ -601,7 +601,7 @@ void Player::setFrozen(bool yesorno) { this->isFrozen = yesorno; }
 
 void Player::setExp(int exp) { this->exp = exp; }
 
-void Player::setGPA(int GPA) { this->GPA = GPA; }
+void Player::setGPA(double GPA) { this->GPA = GPA; }
 
 void Player::setKilledBy(Player* player) { killedBy = player; }
 
