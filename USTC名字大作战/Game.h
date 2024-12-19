@@ -64,10 +64,6 @@ public:
 	int addHeal(int heal);				// 增加回复力
 	int addKillCount();					// 击杀数加一
 
-	bool operator<(const Player& other) const {		// 重载<运算符
-		return (isDead() < other.isDead()) || (isDead() == other.isDead() && getExp() > other.getExp());		// 按照 1.是否存活；2.经验值 升序排列，GPA高的“比较小”，排在最前面
-	}
-
 signals:
 	void hpChanged(int newHp);			// 生命值改变信号
 	void hpmaxChanged(int min, int max);// 生命值上限改变信号

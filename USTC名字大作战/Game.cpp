@@ -455,12 +455,17 @@ void Game::GenerateFreeze(std::vector<Action*> progress)
 	}
 }
 
+bool cmp(const Player* a, const Player* b) { return a->getExp() > b->getExp(); }
+
 std::vector<Player*> Game::CalculateGPA() {
 	std::vector<Player*> rank;	// 按照结果排名，计算GPA
+	// 将所有玩家加入rank
+	rank.clear();
 	for (int i = 0; i < getTeamCount(); i++)
 		for (int j = 0; j < teams[i].size(); j++)
 			rank.push_back(teams[i][j]);
-	sort(rank.begin(), rank.end());
+
+	sort(rank.begin(), rank.end(), cmp);
 
 	// GPA评分细则：所有存活者获得 4.3，后续依次递减至 1，每次递减0.3，最后全赋值为 0 暂不考虑exp并列情况 
 	double gpa = 4.3;
@@ -516,8 +521,7 @@ void Game::GenerateGame()
 		// std::this_thread::sleep_for(std::chrono::milliseconds(500));
 		// QThread::currentThread()->msleep(500);
 	}
-	std::vector<Player*> rank = CalculateGPA();
-	emit gameEnd(rank);
+	emit gameEnd(CalculateGPA());
 }
 
 Action::Action(ActionType actiontype, Player* initiator, Player* target, int damage, int heal, bool isCritical, bool isMiss) :
