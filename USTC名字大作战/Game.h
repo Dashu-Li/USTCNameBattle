@@ -70,6 +70,7 @@ public:
 
 signals:
 	void hpChanged(int newHp);			// 生命值改变信号
+	void hpmaxChanged(int min, int max);// 生命值上限改变信号
 
 };
 

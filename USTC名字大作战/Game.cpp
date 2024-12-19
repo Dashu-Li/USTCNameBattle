@@ -66,14 +66,14 @@ void Game::BurnJudgement(std::vector<Action*> progress)
 
 				Action* action = new Action(Action::Burn, teams[i][j], nullptr, damage);
 				progress.push_back(action);
-				// 在这里添加受到燃烧伤害信号
+				emit generateAction(action);
 
 				// 有概率解除燃烧
 				if (rand() % 4 == 0) {					// 每回合有 1/4 概率解除燃烧（可算出燃烧的回合数的期望是 4）
 					teams[i][j]->setFiredBy(nullptr);
 					Action* action = new Action(Action::Extinguish, teams[i][j]);
 					progress.push_back(action);
-					// 在这里添加解除燃烧信号
+					emit generateAction(action);
 				}
 			}
 }
@@ -87,7 +87,7 @@ void Game::FrozenJudgement(std::vector<Action*> progress)
 				if (rand() % 5 == 0) {					// 每回合有 1/5 概率解除燃烧（可算出燃烧的回合数的期望是 5）
 					teams[i][j]->setFrozen(0);
 					Action* action = new Action(Action::Unfreeze, teams[i][j]);
-					// 在这里添加解除冰冻信号
+					emit generateAction(action);
 				}
 			}
 }
@@ -611,7 +611,7 @@ int Player::addGPA(int GPA) { this->GPA += GPA; return GPA; }
 
 int Player::addHp(int addhp) { emit hpChanged(hp += std::min(hpmax - hp, std::max(-hp, addhp))); return addhp; }
 
-int Player::addHpMax(int addhpmax) { this->hpmax += addhpmax; return addhpmax; }
+int Player::addHpMax(int addhpmax) { emit hpmaxChanged(0, this->hpmax += addhpmax); return addhpmax; }
 
 int Player::addAtk(int atk) { this->atk += atk; return atk; }
 

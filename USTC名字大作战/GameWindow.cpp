@@ -157,6 +157,8 @@ void GameWindow::displayStatus()
 
 			// 连接玩家的 hpChanged 信号到 QProgressBar 的 setValue 槽，以便在玩家生命值改变时自动更新血条
 			connect(player, &Player::hpChanged, healthBar, &QProgressBar::setValue);
+			// 连接玩家的 hpmaxChanged 信号到 QProgressBar 的 setRange 槽，以便在玩家生命值上限改变时自动更新血条范围
+			connect(player, &Player::hpmaxChanged, healthBar, &QProgressBar::setRange);
 
 			ui.statusLayout->addWidget(playerName);
 			ui.statusLayout->addWidget(healthBar);
