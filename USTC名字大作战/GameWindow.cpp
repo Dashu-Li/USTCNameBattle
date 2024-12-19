@@ -38,7 +38,8 @@ void GameWindow::on_battleStartButton_clicked()
 	// QThread* thread = new QThread;																		// 创建线程
 	game = new Game;																					// 创建游戏对象
 	// game->moveToThread(thread);																			// 将游戏对象移动到线程
-	connect(game, &Game::generateAction, this, &GameWindow::displayAction, Qt::DirectConnection);		// 连接游戏的generateAction信号到displayAction槽，连接模式为直接连接
+	connect(game, &Game::generateAction, this, &GameWindow::displayAction);								// 连接游戏的generateAction信号到displayAction槽，连接模式为直接连接
+	connect(game, &Game::gameEnd, this, &GameWindow::GameEnd);											// 连接游戏的gameEnd信号到GameOver槽
 	// thread->start();																					// 启动线程
 	for (int i = 0; i < teams.size(); i++) {
 		QStringList names = teams[i].split("\n");														// 以换行符分割每组文本为名字
@@ -75,7 +76,7 @@ void GameWindow::displayAction(Action* action)
 		// 若闪避则显示被闪避
 		// 紧接着显示目标受到伤害值，用红色显示数字
 		// 若目标死亡则显示被击倒了
-		ui.battleEdit->append(QString::fromStdString(action->getInitiator()->getName()) + (action->getIsCritical() ? " 发起<font color='blueviolet'>暴击</font>，" : " 发起攻击，") + QString::fromStdString(action->getTarget()->getName()) + (action->getIsMiss() ? " <font color='blueviolet'>闪避</font>，" : " ") + "受到" + "<font color='red'>" + QString::number(action->getDamage()) + "</font>" + "点伤害");
+		ui.battleEdit->append(QString::fromStdString(action->getInitiator()->getName()) + (action->getIsCritical() ? " 发起<font color='blueviolet'>暴击</font>，" : " 发起攻击，") + QString::fromStdString(action->getTarget()->getName()) + (action->getIsMiss() ? "<font color='blueviolet'>闪避</font>，" : " ") + "受到" + "<font color='red'>" + QString::number(action->getDamage()) + "</font>" + "点伤害");
 		if (action->getTarget()->isDead())
 			ui.battleEdit->append("    " + QString::fromStdString(action->getTarget()->getName()) + " 被击倒了");
 		break;
@@ -83,9 +84,59 @@ void GameWindow::displayAction(Action* action)
 		// 显示发动治疗，紧接着显示目标恢复生命值，用绿色显示数字
 		ui.battleEdit->append(QString::fromStdString(action->getInitiator()->getName()) + " 治疗 " + QString::fromStdString(action->getTarget()->getName()) + " 恢复了" + "<font color='green'>" + QString::number(action->getHeal()) + "</font>" + "点生命值");
 		break;
+	case Action::Lifesteal:
+		// 显示发动吸血，紧接着显示目标受到伤害值，用红色显示数字
+		// 若目标死亡则显示被击倒了
+		// 紧接着显示发动者恢复生命值，用绿色显示数字
+		ui.battleEdit->append(QString::fromStdString(action->getInitiator()->getName()) + " 发动<font color='blueviolet'>吸血</font>，" + QString::fromStdString(action->getTarget()->getName()) + " 受到" + "<font color='red'>" + QString::number(action->getDamage()) + "</font>" + "点伤害");
+		if (action->getTarget()->isDead())
+			ui.battleEdit->append("    " + QString::fromStdString(action->getTarget()->getName()) + " 被击倒了");
+		ui.battleEdit->append("    " + QString::fromStdString(action->getInitiator()->getName()) + " 恢复了" + "<font color='green'>" + QString::number(action->getHeal()) + "</font>" + "点生命值");
+		break;
+	case Action::Ascension:
+		// 显示发动飞升，紧接着显示发动者攻击力提升
+		ui.battleEdit->append(QString::fromStdString(action->getInitiator()->getName()) + " 发动<font color='blueviolet'>飞升</font>");
+		break;
+	case Action::Fire:
+		// 显示发动点燃，紧接着显示目标受到伤害值，用红色显示数字
+		// 若目标死亡则显示被击倒了
+		ui.battleEdit->append(QString::fromStdString(action->getInitiator()->getName()) + " <font color='red'>点燃</font>了 " + QString::fromStdString(action->getTarget()->getName()) + (action->getIsMiss() ? "，" + QString::fromStdString(action->getTarget()->getName()) + " <font color='blueviolet'>闪避</font>" : ""));
+		break;
+	case Action::Freeze:
+		// 显示发动冰冻，紧接着显示目标被冰冻
+		ui.battleEdit->append(QString::fromStdString(action->getInitiator()->getName()) + " <font color='blue'>冰冻</font>了 " + QString::fromStdString(action->getTarget()->getName()));
+		break;
+	case Action::Burn:
+		// 显示发动燃烧，紧接着显示目标受到伤害值，用红色显示数字
+		// 若目标死亡则显示被击倒了
+		ui.battleEdit->append(QString::fromStdString(action->getInitiator()->getName()) + " <font color='blueviolet'>燃烧</font>了 " + QString::fromStdString(action->getTarget()->getName()) + " 受到" + "<font color='red'>" + QString::number(action->getDamage()) + "</font>" + "点伤害");
+		if (action->getTarget()->isDead())
+			ui.battleEdit->append("    " + QString::fromStdString(action->getTarget()->getName()) + " 被击倒了");
+		break;
+	case Action::Extinguish:
+		// 显示发动熄灭，紧接着显示目标熄灭燃烧
+		ui.battleEdit->append(QString::fromStdString(action->getInitiator()->getName()) + " 的燃烧<font color='blueviolet'>熄灭</font>了");
+		break;
+	case Action::Unfreeze:
+		// 显示发动解冻，紧接着显示目标解冻
+		ui.battleEdit->append(QString::fromStdString(action->getInitiator()->getName()) + " <font color='blueviolet'>解冻</font>了");
+		break;
 	}
 	QCoreApplication::processEvents();		// 手动处理事件循环
-	QThread::currentThread()->msleep(700);	// 线程休眠700ms
+	QThread::currentThread()->msleep(600);	// 线程休眠600ms
+}
+
+void GameWindow::GameEnd(std::vector<Player*> rank)
+{
+	ui.battleEdit->append("------------------------------------------------------------");
+	ui.battleEdit->append("游戏结束");
+	ui.battleEdit->append("------------------------------------------------------------");
+	for (int i = 0; i < rank.size(); i++)
+		// 显示排名
+		ui.battleEdit->append("第" + QString::number(i + 1) + "名: " + QString::fromStdString(rank[i]->getName()) + " GPA: " + QString::number(rank[i]->getGPA()));
+	ui.battleEdit->append("------------------------------------------------------------");
+	ui.battleEdit->append("游戏结束");
+	ui.battleEdit->append("------------------------------------------------------------");
 }
 
 void GameWindow::displayStatus()
@@ -115,6 +166,7 @@ void GameWindow::displayStatus()
 	}
 	// 显示分割线分隔后面对战信息
 	ui.battleEdit->append("------------------------------------------------------------");
+	QCoreApplication::processEvents();		// 手动处理事件循环
 }
 
 void GameWindow::closeEvent(QCloseEvent* event)

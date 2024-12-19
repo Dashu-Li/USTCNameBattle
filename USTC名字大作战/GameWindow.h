@@ -26,6 +26,7 @@ private slots:
 	void on_battleStartButton_clicked();
 	void on_PlayAgainButton_clicked();
 	void displayAction(Action* action);
+	void GameEnd(std::vector<Player*>);
 
 signals:
 	void Back();

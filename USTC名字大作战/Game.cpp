@@ -317,7 +317,7 @@ Action* Game::GenerateAscension()
 	teams[choosed_i][choosed_j]->addHeal(rand() % 4);
 
 	Action* action = new Action(Action::Ascension, teams[choosed_i][choosed_j]);
-	// 添加飞升信号
+	emit generateAction(action);
 	return action;
 }
 
@@ -377,14 +377,14 @@ void Game::GenerateFire(std::vector<Action*> progress)
 	if (!isMiss) teams[defender_i][defender_j]->setFiredBy(teams[attacker_i][attacker_j]);
 	Action* action = new Action(Action::Fire, teams[attacker_i][attacker_j], teams[defender_i][defender_j], 0, 0, 0, isMiss);
 	progress.push_back(action);
-	// 添加点燃信号
+	emit generateAction(action);
 
 	// 如果之前被冰冻，点燃将会解冻
 	if (!isMiss && teams[defender_i][defender_j]->getIsFrozen()) {
 		teams[defender_i][defender_j]->setFrozen(0);
 		Action* action = new Action(Action::Unfreeze, teams[defender_i][defender_j]);
 		progress.push_back(action);
-		// 添加解冻信号
+		emit generateAction(action);
 	}
 }
 
@@ -444,14 +444,14 @@ void Game::GenerateFreeze(std::vector<Action*> progress)
 	if (!isMiss) teams[defender_i][defender_j]->setFrozen(1);
 	Action* action = new Action(Action::Freeze, teams[attacker_i][attacker_j], teams[defender_i][defender_j], 0, 0, 0, isMiss);
 	progress.push_back(action);
-	// 添加冰冻信号
+	emit generateAction(action);
 
 	// 如果之前被点燃，冰冻将会灭火
 	if (!isMiss && teams[defender_i][defender_j]->getFiredBy() != nullptr) {
 		teams[defender_i][defender_j]->setFiredBy(nullptr);
 		Action* action = new Action(Action::Extinguish, teams[defender_i][defender_j]);
 		progress.push_back(action);
-		// 添加灭火信号
+		emit generateAction(action);
 	}
 }
 
@@ -462,7 +462,7 @@ std::vector<Player*> Game::CalculateGPA() {
 			rank.push_back(teams[i][j]);
 	sort(rank.begin(), rank.end());
 
-	// GPA评分细则：所有存活者获得 4.3，后续依次递减至 1，每次递减0.3，最后全赋值为 0。暂不考虑exp并列情况 
+	// GPA评分细则：所有存活者获得 4.3，后续依次递减至 1，每次递减0.3，最后全赋值为 0 暂不考虑exp并列情况 
 	double gpa = 4.3;
 	for (int i = 0; i < rank.size(); i++) {
 		if (rank[i]->isDead()) gpa -= 0.3;
@@ -516,8 +516,8 @@ void Game::GenerateGame()
 		// std::this_thread::sleep_for(std::chrono::milliseconds(500));
 		// QThread::currentThread()->msleep(500);
 	}
-
 	std::vector<Player*> rank = CalculateGPA();
+	emit gameEnd(rank);
 }
 
 Action::Action(ActionType actiontype, Player* initiator, Player* target, int damage, int heal, bool isCritical, bool isMiss) :

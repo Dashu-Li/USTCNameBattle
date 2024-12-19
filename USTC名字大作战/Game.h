@@ -148,6 +148,6 @@ public:
 
 signals:
 	void generateAction(Action*);								// 产生操作信号
-	void gameEnd();												// 游戏结束信号
+	void gameEnd(std::vector<Player*>);							// 游戏结束信号
 
 };
