@@ -2,6 +2,7 @@
 #include <QMessageBox>
 #include <QRegularExpression>
 #include <QLabel>
+#include <QThread>
 
 GameWindow::GameWindow(QWidget* parent)
 	: QMainWindow(parent), game(nullptr)
@@ -18,34 +19,38 @@ GameWindow::~GameWindow()
 
 void GameWindow::on_battleStartButton_clicked()
 {
-	QString battleText = ui.battleEdit->toPlainText().trimmed();				// 获取battleEdit的文本并去除首尾空行
-	if (battleText.isEmpty()) {													// 如果文本为空, 则弹出提示框
+	QString battleText = ui.battleEdit->toPlainText().trimmed();										// 获取battleEdit的文本并去除首尾空行
+	if (battleText.isEmpty()) {																			// 如果文本为空, 则弹出提示框
 		QMessageBox::warning(this, "错误", "请输入名字");
 		return;
 	}
-	QStringList teams = battleText.split(QRegularExpression("\\n\\s*\\n"));		// 以连续空行分割文本为组
-	if (teams.size() == 1) {													// 如果只有一个组, 则为个人战
-		QStringList names = battleText.split("\n");								// 以换行符分割文本为名字
-		if (names.size() < 2) {													// 如果名字数量小于2, 则弹出提示框
+	QStringList teams = battleText.split(QRegularExpression("\\n\\s*\\n"));								// 以连续空行分割文本为组
+	if (teams.size() == 1) {																			// 如果只有一个组, 则为个人战
+		QStringList names = battleText.split("\n");														// 以换行符分割文本为名字
+		if (names.size() < 2) {																			// 如果名字数量小于2, 则弹出提示框
 			QMessageBox::warning(this, "错误", "名字数量不足");
 			return;
 		}
 	}
-	ui.battleEdit->setReadOnly(true);											// 设置battleEdit只读
-	ui.battleStartButton->setEnabled(false);									// 禁用开始对战按钮
-	ui.PlayAgainButton->setEnabled(true);										// 启用再玩一局按钮
-	game = new Game;															// 创建游戏对象
+	ui.battleEdit->setReadOnly(true);																	// 设置battleEdit只读
+	ui.battleStartButton->setEnabled(false);															// 禁用开始对战按钮
+	ui.PlayAgainButton->setEnabled(true);																// 启用再玩一局按钮
+	// QThread* thread = new QThread;																		// 创建线程
+	game = new Game;																					// 创建游戏对象
+	// game->moveToThread(thread);																			// 将游戏对象移动到线程
+	connect(game, &Game::generateAction, this, &GameWindow::displayAction, Qt::DirectConnection);		// 连接游戏的generateAction信号到displayAction槽，连接模式为直接连接
+	// thread->start();																					// 启动线程
 	for (int i = 0; i < teams.size(); i++) {
-		QStringList names = teams[i].split("\n");								// 以换行符分割每组文本为名字
+		QStringList names = teams[i].split("\n");														// 以换行符分割每组文本为名字
 		for (int j = 0; j < names.size(); j++)
-			game->addPlayer(names[j].toStdString(), i);							// 添加玩家
+			game->addPlayer(names[j].toStdString(), i);													// 添加玩家
 	}
-	if (!game->isTeamBattle()) game->Regroup();									// 如果是个人战, 则重新分组
-	connect(game, &Game::generateAction, this, &GameWindow::displayAction);		// 连接游戏的generateAction信号到displayAction槽
-	displayStatus();															// 显示状态
-	game->GenerateGame();														// 生成对局
-	disconnect(game, &Game::generateAction, this, &GameWindow::displayAction);	// 断开连接
-	delete game;																// 删除游戏对象
+	if (!game->isTeamBattle()) game->Regroup();															// 如果是个人战, 则重新分组
+	displayStatus();																					// 显示状态
+	game->GenerateGame();																				// 生成对局
+	disconnect(game, &Game::generateAction, this, &GameWindow::displayAction);							// 断开连接
+	delete game;																						// 删除游戏对象
+	// thread->quit();																						// 退出线程
 }
 
 void GameWindow::on_PlayAgainButton_clicked()
@@ -70,15 +75,17 @@ void GameWindow::displayAction(Action* action)
 		// 若闪避则显示被闪避
 		// 紧接着显示目标受到伤害值，用红色显示数字
 		// 若目标死亡则显示被击倒了
-		ui.battleEdit->append(QString::fromStdString(action->getInitiator()->getName()) + (action->getIsCritical() ? "发起<font color='blue'>暴击</font>，" : "发起攻击，") + QString::fromStdString(action->getTarget()->getName()) + (action->getIsMiss() ? "<font color='blue'>闪避</font>，" : "") + "受到" + "<font color='red'>" + QString::number(action->getDamage()) + "</font>" + "点伤害");
+		ui.battleEdit->append(QString::fromStdString(action->getInitiator()->getName()) + (action->getIsCritical() ? " 发起<font color='blueviolet'>暴击</font>，" : " 发起攻击，") + QString::fromStdString(action->getTarget()->getName()) + (action->getIsMiss() ? " <font color='blueviolet'>闪避</font>，" : " ") + "受到" + "<font color='red'>" + QString::number(action->getDamage()) + "</font>" + "点伤害");
 		if (action->getTarget()->isDead())
-			ui.battleEdit->append("    " + QString::fromStdString(action->getTarget()->getName()) + "被击倒了");
+			ui.battleEdit->append("    " + QString::fromStdString(action->getTarget()->getName()) + " 被击倒了");
 		break;
 	case Action::Heal:
 		// 显示发动治疗，紧接着显示目标恢复生命值，用绿色显示数字
-		ui.battleEdit->append(QString::fromStdString(action->getInitiator()->getName()) + "治疗" + QString::fromStdString(action->getTarget()->getName()) + "恢复了" + "<font color='green'>" + QString::number(action->getHeal()) + "</font>" + "点生命值");
+		ui.battleEdit->append(QString::fromStdString(action->getInitiator()->getName()) + " 治疗 " + QString::fromStdString(action->getTarget()->getName()) + " 恢复了" + "<font color='green'>" + QString::number(action->getHeal()) + "</font>" + "点生命值");
 		break;
 	}
+	QCoreApplication::processEvents();		// 手动处理事件循环
+	QThread::currentThread()->msleep(700);	// 线程休眠700ms
 }
 
 void GameWindow::displayStatus()
@@ -107,7 +114,7 @@ void GameWindow::displayStatus()
 			ui.statusLayout->addItem(new QSpacerItem(0, 20, QSizePolicy::Minimum, QSizePolicy::Expanding)); // 添加占位符以空出一定距离
 	}
 	// 显示分割线分隔后面对战信息
-	ui.battleEdit->append("--------------------------------------------------");
+	ui.battleEdit->append("------------------------------------------------------------");
 }
 
 void GameWindow::closeEvent(QCloseEvent* event)

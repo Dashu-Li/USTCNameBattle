@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <QObject>
+#include <QThread>
 
 class Player : public QObject {
 	Q_OBJECT
@@ -34,7 +35,7 @@ public:
 	const int& getCrit() const;			// 获取暴击率
 	const int& getMiss() const;			// 获取闪避率
 	const int& getHeal() const;			// 获取回复力
-	Player* getFiredBy();			// 获取被谁点燃
+	Player* getFiredBy();				// 获取被谁点燃
 	const int& getIsFrozen() const;		// 获取是否冰冻
 	const int& getKillCount() const;	// 获取击杀数
 	const Player* getKilledBy() const;	// 获取被谁杀死
@@ -74,7 +75,18 @@ signals:
 
 class Action {
 public:
-	enum ActionType { Attack, Heal, Lifesteal, Ascension, Fire, Freeze, Burn, Extinguish, Unfreeze };			// 操作类型，有攻击、防御、吸血、飞升、点燃、冰冻、燃烧、熄灭、解冻等，可以添加更多属性
+	// 操作类型
+	enum ActionType {
+		Attack,			// 攻击
+		Heal,			// 治疗
+		Lifesteal,		// 吸血
+		Ascension,		// 飞升
+		Fire,			// 点燃
+		Freeze,			// 冰冻
+		Burn,			// 燃烧
+		Extinguish,		// 熄灭
+		Unfreeze		// 解冻
+	};
 
 	// 构造函数，返回一个操作对象，包含操作类型、发动者、目标、数值、是否暴击、是否闪避等信息
 	Action(ActionType actiontype, Player* initiator, Player* target = nullptr, int damage = 0, int heal = 0, bool isCritical = false, bool isMiss = false);

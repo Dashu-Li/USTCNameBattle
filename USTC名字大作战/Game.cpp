@@ -1,8 +1,6 @@
 ﻿#include <algorithm>
 #include <random>
 #include <ctime>
-#include <chrono>   // 用于时间处理
-#include <thread>   // 用于线程休眠
 #include <vector>
 #include <cmath>
 #include "Game.h"
@@ -69,10 +67,10 @@ void Game::BurnJudgement(std::vector<Action*> progress)
 				Action* action = new Action(Action::Burn, teams[i][j], nullptr, damage);
 				progress.push_back(action);
 				// 在这里添加受到燃烧伤害信号
-				
+
 				// 有概率解除燃烧
 				if (rand() % 4 == 0) {					// 每回合有 1/4 概率解除燃烧（可算出燃烧的回合数的期望是 4）
-					teams[i][j]->setFiredBy(nullptr); 
+					teams[i][j]->setFiredBy(nullptr);
 					Action* action = new Action(Action::Extinguish, teams[i][j]);
 					progress.push_back(action);
 					// 在这里添加解除燃烧信号
@@ -100,7 +98,7 @@ Action* Game::GenerateAttack()
 	for (int i = 0; i < getTeamCount(); i++)
 		for (int j = 0; j < teams[i].size(); j++)
 			if (!teams[i][j]->isDead()) {
-				if(!teams[i][j]->getIsFrozen())							// 冰冻时不会刷新攻击权重
+				if (!teams[i][j]->getIsFrozen())							// 冰冻时不会刷新攻击权重
 					weight[i][j].attacker = std::max(PlayersAlive(), weight[i][j].attacker + 1);
 				weight[i][j].defender = std::max(PlayersAlive(), weight[i][j].defender + 1);
 			}
@@ -292,7 +290,7 @@ Action* Game::GenerateLifesteal()
 	teams[attacker_i][attacker_j]->addExp(damage + heal);
 
 	Action* action = new Action(Action::Lifesteal, teams[attacker_i][attacker_j], teams[defender_i][defender_j], damage, heal, 0, isMiss);
-	// 添加吸血信号
+	emit generateAction(action);
 	return action;
 }
 
@@ -491,31 +489,32 @@ void Game::GenerateGame()
 		BurnJudgement(progress);
 		FrozenJudgement(progress);
 		switch (seed) {
-			case 0:
-			case 1:
-			case 2:
-			case 3:
-				progress.push_back(GenerateAttack());
-				break;
-			case 4:
-			case 5:
-				progress.push_back(GenerateHeal());
-				break;
-			case 6:
-				progress.push_back(GenerateLifesteal());
-				break;
-			case 7:
-				progress.push_back(GenerateAscension());
-				break;
-			case 8:
-				GenerateFire(progress);
-				break;
-			case 9:
-				GenerateFreeze(progress);
-				break;
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+			progress.push_back(GenerateAttack());
+			break;
+		case 4:
+		case 5:
+			progress.push_back(GenerateHeal());
+			break;
+		case 6:
+			progress.push_back(GenerateLifesteal());
+			break;
+		case 7:
+			progress.push_back(GenerateAscension());
+			break;
+		case 8:
+			GenerateFire(progress);
+			break;
+		case 9:
+			GenerateFreeze(progress);
+			break;
 		}
 		// 暂停
 		// std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		// QThread::currentThread()->msleep(500);
 	}
 
 	std::vector<Player*> rank = CalculateGPA();
