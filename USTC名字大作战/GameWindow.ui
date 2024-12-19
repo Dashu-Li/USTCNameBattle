@@ -37,6 +37,13 @@
         </property>
        </spacer>
       </item>
+      <item>
+       <widget class="QPushButton" name="fastButton">
+        <property name="text">
+         <string>快进&gt;&gt;</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
     <item>
@@ -101,7 +108,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>20</height>
+     <height>33</height>
     </rect>
    </property>
   </widget>
