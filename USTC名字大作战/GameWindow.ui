@@ -18,9 +18,9 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_3">
       <item>
-   <widget class="QPushButton" name="backButton">
+       <widget class="QPushButton" name="backButton">
         <property name="text">
-         <string>&lt;返回</string>
+         <string>&lt; 返回</string>
         </property>
        </widget>
       </item>
@@ -40,7 +40,14 @@
      </layout>
     </item>
     <item>
-     <widget class="QTextEdit" name="battleEdit"/>
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,5">
+      <item>
+       <layout class="QVBoxLayout" name="statusLayout"/>
+      </item>
+      <item>
+       <widget class="QTextEdit" name="battleEdit"/>
+      </item>
+     </layout>
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -54,15 +61,22 @@
           <width>40</width>
           <height>20</height>
          </size>
-    </property>
+        </property>
        </spacer>
       </item>
       <item>
        <widget class="QPushButton" name="battleStartButton">
-    <property name="text">
+        <property name="text">
          <string>开始战斗!</string>
-    </property>
-   </widget>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="PlayAgainButton">
+        <property name="text">
+         <string>再玩一局</string>
+        </property>
+       </widget>
       </item>
       <item>
        <spacer name="horizontalSpacer_2">

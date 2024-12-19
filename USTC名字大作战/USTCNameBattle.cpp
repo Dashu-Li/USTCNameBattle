@@ -1,26 +1,25 @@
-#include "USTCNameBattle.h"
+ï»¿#include "USTCNameBattle.h"
 #include <QtWidgets/QApplication>
 
-USTCNameBattle::USTCNameBattle(QWidget *parent)
-    : QMainWindow(parent)
+USTCNameBattle::USTCNameBattle(QWidget* parent)
+	: QMainWindow(parent)
 {
-    ui.setupUi(this);
-	gameWindow = new GameWindow;															// ´´½¨ÓÎÏ·´°¿Ú
-	connect(ui.gameStartButton, &QPushButton::clicked, this, &USTCNameBattle::GameStart);	// Á¬½ÓGameStartButtonµÄclickedĞÅºÅµ½GameStart²Û
-	connect(gameWindow, &GameWindow::Back, this, &USTCNameBattle::Back);					// Á¬½ÓÓÎÏ·´°¿ÚµÄBackĞÅºÅµ½Back²Û
+	ui.setupUi(this);
+	gameWindow = new GameWindow;											// åˆ›å»ºæ¸¸æˆçª—å£
+	connect(gameWindow, &GameWindow::Back, this, &USTCNameBattle::Back);	// è¿æ¥æ¸¸æˆçª—å£çš„Backä¿¡å·åˆ°Backæ§½
 }
 
 USTCNameBattle::~USTCNameBattle()
 {}
 
-void USTCNameBattle::GameStart()
+void USTCNameBattle::on_gameStartButton_clicked()
 {
-	gameWindow->show();												// ÏÔÊ¾ÓÎÏ·´°¿Ú
-	this->hide();													// Òş²ØÖ÷´°¿Ú
+	gameWindow->show();														// æ˜¾ç¤ºæ¸¸æˆçª—å£
+	this->hide();															// éšè—ä¸»çª—å£
 }
 
 void USTCNameBattle::Back()
 {
-	this->show();													// ÏÔÊ¾Ö÷´°¿Ú
-	gameWindow->hide();												// Òş²ØÓÎÏ·´°¿Ú
+	this->show();															// æ˜¾ç¤ºä¸»çª—å£
+	gameWindow->hide();														// éšè—æ¸¸æˆçª—å£
 }

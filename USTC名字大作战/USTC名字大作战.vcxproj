@@ -107,7 +107,7 @@
     <ResourceCompile Include="USTCNameBattle.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Game.h" />
+    <QtMoc Include="Game.h" />
     <QtMoc Include="GameWindow.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
