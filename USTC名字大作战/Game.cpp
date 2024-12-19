@@ -209,14 +209,14 @@ Action* Game::GenerateHeal()
 	weight[healee_i][healee_j].healee = 0;
 
 	// 计算回血
-	int heal = std::min(teams[healee_i][healee_j]->getHpMax() - teams[healee_i][healee_j]->getHp(), teams[healer_i][healer_j]->getHeal() + teams[healee_i][healee_j]->getDef());
+	int heal = std::min(teams[healee_i][healee_j]->getHpMax() - teams[healee_i][healee_j]->getHp(), teams[healer_i][healer_j]->getHeal() + teams[healee_i][healee_j]->getDef() / 2);
 	teams[healee_i][healee_j]->addHp(heal);
 
 	// 计算经验
 	teams[healer_i][healer_j]->addExp(heal);
 
 	Action* action = new Action(Action::Heal, teams[healer_i][healer_j], teams[healee_i][healee_j], 0, heal);
-	emit generateAction(action);
+	if (heal > 0) emit generateAction(action);
 	return action;
 }
 
@@ -455,7 +455,7 @@ void Game::GenerateFreeze(std::vector<Action*> progress)
 	}
 }
 
-bool cmp(const Player* a, const Player* b) { return a->getExp() > b->getExp(); }
+bool cmp(const Player* a, const Player* b) { return (a->isDead() < b->isDead()) || (a->isDead() == b->isDead() && a->getExp() > b->getExp()); }
 
 std::vector<Player*> Game::CalculateGPA() {
 	std::vector<Player*> rank;	// 按照结果排名，计算GPA
