@@ -21,10 +21,12 @@ private:
 	Ui::GameWindowClass ui;
 	Game* game;
 	void displayStatus();		// 显示每个玩家生命条
+	int sleepTime = 600;		// 每次动作的间隔时间
 
 private slots:
 	void on_battleStartButton_clicked();
 	void on_PlayAgainButton_clicked();
+	void on_fastButton_clicked();
 	void displayAction(Action* action);
 	void GameEnd(std::vector<Player*>);
 
